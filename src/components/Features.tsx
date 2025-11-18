@@ -69,11 +69,11 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 mb-10 sm:mb-12 md:mb-14 lg:mb-16 max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-10 sm:mb-12 md:mb-14 lg:mb-16 max-w-7xl mx-auto px-3 sm:px-4">
           {primaryFeatures.map((feature, index) => (
             <div
               key={index}
-              className="scroll-reveal elegant-card relative bg-gradient-to-br from-light-primary/95 via-light-secondary/50 to-light-primary/95 dark:from-dark-primary/95 dark:via-dark-secondary/50 dark:to-dark-primary/95 p-5 sm:p-6 md:p-8 lg:p-10 rounded-xl sm:rounded-2xl md:rounded-3xl border border-indigo-500/20 dark:border-violet-500/20 hover:border-indigo-500/40 dark:hover:border-violet-500/40 transition-all duration-500 shadow-lg shadow-indigo-500/10 hover:shadow-2xl hover:shadow-indigo-500/30 flex flex-col h-full group"
+              className="scroll-reveal elegant-card relative bg-gradient-to-br from-light-primary/95 via-light-secondary/50 to-light-primary/95 dark:from-dark-primary/95 dark:via-dark-secondary/50 dark:to-dark-primary/95 p-6 sm:p-8 md:p-10 lg:p-12 rounded-2xl sm:rounded-3xl border-2 border-indigo-500/20 dark:border-violet-500/20 hover:border-indigo-500/50 dark:hover:border-violet-500/50 transition-all duration-500 shadow-xl shadow-indigo-500/10 hover:shadow-2xl hover:shadow-indigo-500/30 flex flex-col h-full group"
             >
               <div className="relative z-10 flex flex-col h-full">
                 <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 sm:mb-6 md:mb-8 shadow-elevation-3 border-2 border-white/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
@@ -91,14 +91,14 @@ export default function Features() {
         </div>
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
             {additionalFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="scroll-reveal flex items-start gap-3 sm:gap-4 bg-light-primary/95 dark:bg-dark-primary/95 p-4 sm:p-5 md:p-6 lg:p-7 rounded-xl sm:rounded-2xl border border-brand-slate-200/20 dark:border-brand-slate-700/20 hover:border-brand-indigo dark:hover:border-brand-violet transition-all duration-300 shadow-elevation-2 h-full"
+                className="scroll-reveal flex items-start gap-4 sm:gap-5 bg-light-primary/95 dark:bg-dark-primary/95 p-5 sm:p-6 md:p-7 lg:p-8 rounded-xl sm:rounded-2xl border-2 border-brand-slate-200/20 dark:border-brand-slate-700/20 hover:border-brand-indigo dark:hover:border-brand-violet hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 shadow-elevation-2 h-full group hover:-translate-y-1"
               >
-                <div className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-brand-violet via-brand-indigo to-brand-violet flex items-center justify-center flex-shrink-0 shadow-elevation-2 border-2 border-white/20">
-                  <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white drop-shadow-md" aria-hidden="true" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-brand-violet via-brand-indigo to-brand-violet flex items-center justify-center flex-shrink-0 shadow-elevation-3 border-2 border-white/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white drop-shadow-lg" aria-hidden="true" />
                 </div>
                 <div className="flex flex-col flex-grow">
                   <h4 className="text-sm sm:text-base md:text-lg font-bold text-text-light-primary dark:text-text-dark-primary mb-1.5 sm:mb-2">

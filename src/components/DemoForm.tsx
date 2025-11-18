@@ -111,7 +111,7 @@ export default function DemoForm() {
                   name="name"
                   required
                   disabled={isSubmitting}
-                  className="bg-light-primary/95 dark:bg-dark-primary/95 border border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-3 sm:px-4 md:px-5 py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium focus:outline-none focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 min-h-[48px]"
+                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 min-h-[48px] hover:border-brand-indigo/50"
                   placeholder="John Doe"
                   aria-required="true"
                 />
@@ -130,8 +130,9 @@ export default function DemoForm() {
                   name="email"
                   required
                   disabled={isSubmitting}
-                  className="bg-light-primary/95 dark:bg-dark-primary/95 border border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1"
+                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 min-h-[48px] hover:border-brand-purple/50"
                   placeholder="john@company.com"
+                  aria-required="true"
                 />
               </div>
 
@@ -148,8 +149,9 @@ export default function DemoForm() {
                   name="company"
                   required
                   disabled={isSubmitting}
-                  className="bg-light-primary/95 dark:bg-dark-primary/95 border border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1"
+                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 min-h-[48px] hover:border-brand-purple/50"
                   placeholder="Acme Inc."
+                  aria-required="true"
                 />
               </div>
 
@@ -166,8 +168,9 @@ export default function DemoForm() {
                   name="job_title"
                   required
                   disabled={isSubmitting}
-                  className="bg-light-primary/95 dark:bg-dark-primary/95 border border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1"
+                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 min-h-[48px] hover:border-brand-purple/50"
                   placeholder="Product Manager"
+                  aria-required="true"
                 />
               </div>
 
@@ -183,7 +186,8 @@ export default function DemoForm() {
                   name="service_interest"
                   required
                   disabled={isSubmitting}
-                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 mb-5 md:mb-6"
+                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 mb-5 md:mb-6 min-h-[48px] hover:border-brand-purple/50"
+                  aria-required="true"
                 >
                   <option value="">Select a service</option>
                   <option value="chat-agents">Chat AI Agents</option>
