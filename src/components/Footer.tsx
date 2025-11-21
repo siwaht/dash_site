@@ -17,7 +17,7 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
           {/* Brand Column */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
@@ -48,33 +48,7 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
             </div>
           </div>
 
-          {/* Links Columns */}
-          <div>
-            <h4 className="font-bold text-white mb-6">Product</h4>
-            <ul className="space-y-4">
-              {['Features', 'Integrations', 'Pricing', 'Changelog'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-slate-400 hover:text-indigo-400 transition-colors">
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-6">Company</h4>
-            <ul className="space-y-4">
-              {['About Us', 'Careers', 'Blog', 'Contact'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-slate-400 hover:text-indigo-400 transition-colors">
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
+          {/* Privacy Policy */}
           <div>
             <h4 className="font-bold text-white mb-6">Legal</h4>
             <ul className="space-y-4">
@@ -82,16 +56,6 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
                 <button onClick={onOpenPrivacy} className="text-sm text-slate-400 hover:text-indigo-400 transition-colors">
                   Privacy Policy
                 </button>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-slate-400 hover:text-indigo-400 transition-colors">
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-slate-400 hover:text-indigo-400 transition-colors">
-                  Cookie Policy
-                </a>
               </li>
             </ul>
           </div>
