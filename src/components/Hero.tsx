@@ -1,4 +1,4 @@
-import AnimatedVisual from './AnimatedVisual';
+import AIAgentArchitecture from './AIAgentArchitecture';
 import { Bot, Clock, TrendingDown, ArrowRight } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
@@ -80,7 +80,7 @@ export default function Hero() {
             ))}
           </div>
 
-          <AnimatedVisual />
+          <AIAgentArchitecture />
         </div>
       </div>
     </section>
