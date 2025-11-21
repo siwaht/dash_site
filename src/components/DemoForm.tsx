@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { CheckCircle, AlertCircle, Sparkles, ChevronDown, X, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
@@ -7,7 +7,30 @@ export default function DemoForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [isServiceDropdownOpen, setIsServiceDropdownOpen] = useState(false);
   const sectionRef = useScrollReveal({ threshold: 0.1, staggerDelay: 100 });
+
+  const serviceOptions = [
+    { value: 'chat-agents', label: 'Chat AI Agents' },
+    { value: 'voice-agents', label: 'Voice Calling AI Agents' },
+    { value: 'ai-avatars', label: 'AI Avatars' },
+    { value: 'rag-retrieval', label: 'RAG Data Retrieval' },
+    { value: 'custom-agents', label: 'Custom AI Agents' },
+    { value: 'video-ads', label: 'AI Generated Video Ads' },
+  ];
+
+  const toggleService = (value: string) => {
+    setSelectedServices(prev => 
+      prev.includes(value)
+        ? prev.filter(item => item !== value)
+        : [...prev, value]
+    );
+  };
+
+  const removeService = (value: string) => {
+    setSelectedServices(prev => prev.filter(item => item !== value));
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,7 +44,7 @@ export default function DemoForm() {
       email: formData.get('email') as string,
       company: formData.get('company') as string,
       job_title: formData.get('job_title') as string,
-      service_interest: formData.get('service_interest') as string,
+      service_interest: selectedServices.join(', '),
     };
 
     try {
@@ -37,6 +60,7 @@ export default function DemoForm() {
 
       setSubmitStatus('success');
       e.currentTarget.reset();
+      setSelectedServices([]);
     } catch (error) {
       console.error('Error submitting demo request:', error);
       setSubmitStatus('error');
@@ -174,28 +198,92 @@ export default function DemoForm() {
                 />
               </div>
 
-              <div className="scroll-reveal md:col-span-2" style={{ animationDelay: '0.4s' }}>
+              <div className="scroll-reveal md:col-span-2 relative" style={{ animationDelay: '0.4s' }}>
                 <label
-                  htmlFor="service-interest"
                   className="text-sm font-bold text-text-light-secondary dark:text-text-dark-secondary mb-3 block"
                 >
-                  Service Interest
+                  Service Interest <span className="text-xs font-normal opacity-70">(Select all that apply)</span>
                 </label>
-                <select
-                  id="service-interest"
-                  name="service_interest"
-                  required
-                  disabled={isSubmitting}
-                  className="w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 mb-5 md:mb-6 min-h-[48px] hover:border-brand-purple/50"
-                  aria-required="true"
-                >
-                  <option value="">Select a service</option>
-                  <option value="chat-agents">Chat AI Agents</option>
-                  <option value="voice-agents">Voice Calling AI Agents</option>
-                  <option value="ai-avatars">AI Avatars</option>
-                  <option value="rag-retrieval">RAG Data Retrieval</option>
-                  <option value="all-services">All Services</option>
-                </select>
+                
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsServiceDropdownOpen(!isServiceDropdownOpen)}
+                    disabled={isSubmitting}
+                    className={`w-full bg-light-primary/95 dark:bg-dark-primary/95 border-2 ${isServiceDropdownOpen ? 'border-brand-purple ring-2 ring-brand-purple/40' : 'border-brand-slate-200/30 dark:border-brand-slate-700/30'} text-text-light-primary dark:text-text-dark-primary px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl text-base font-medium focus:outline-none transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1 mb-5 md:mb-6 min-h-[48px] hover:border-brand-purple/50 flex items-center justify-between text-left`}
+                    aria-haspopup="listbox"
+                    aria-expanded={isServiceDropdownOpen}
+                  >
+                    <span className={selectedServices.length === 0 ? 'text-text-light-secondary/70 dark:text-text-dark-secondary/70' : ''}>
+                      {selectedServices.length === 0 
+                        ? 'Select services...' 
+                        : `${selectedServices.length} service${selectedServices.length > 1 ? 's' : ''} selected`}
+                    </span>
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isServiceDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isServiceDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-light-primary dark:bg-dark-primary border-2 border-brand-slate-200/30 dark:border-brand-slate-700/30 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                      <ul className="p-2" role="listbox" aria-multiselectable="true">
+                        {serviceOptions.map((option) => {
+                          const isSelected = selectedServices.includes(option.value);
+                          return (
+                            <li 
+                              key={option.value}
+                              role="option"
+                              aria-selected={isSelected}
+                              onClick={() => toggleService(option.value)}
+                              className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-colors ${
+                                isSelected 
+                                  ? 'bg-brand-purple/10 text-brand-purple dark:text-brand-purple-light' 
+                                  : 'hover:bg-light-secondary dark:hover:bg-dark-secondary text-text-light-primary dark:text-text-dark-primary'
+                              }`}
+                            >
+                              <span className="font-medium">{option.label}</span>
+                              {isSelected && <Check className="w-5 h-5" />}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected chips */}
+                {selectedServices.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4 -mt-2">
+                    {selectedServices.map(value => {
+                      const option = serviceOptions.find(o => o.value === value);
+                      return (
+                        <span 
+                          key={value}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-brand-purple/10 text-brand-purple dark:text-brand-purple-light border border-brand-purple/20 animate-in fade-in zoom-in-95"
+                        >
+                          {option?.label}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); removeService(value); }}
+                            className="hover:bg-brand-purple/20 rounded-full p-0.5 transition-colors"
+                            aria-label={`Remove ${option?.label}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Hidden input for validation if needed, though we handle submission manually */}
+                <input 
+                  type="text" 
+                  name="service_interest" 
+                  value={selectedServices.join(',')} 
+                  required={selectedServices.length === 0}
+                  className="sr-only" 
+                  onChange={() => {}}
+                  tabIndex={-1}
+                />
               </div>
 
               <div className="scroll-reveal md:col-span-2" style={{ animationDelay: '0.5s' }}>
