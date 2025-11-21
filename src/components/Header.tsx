@@ -33,13 +33,17 @@ export default function Header() {
           </a>
 
           <ul className="hidden md:flex gap-8 items-center">
-            {['Services', 'Features', 'Solutions'].map((item) => (
-              <li key={item}>
+            {[
+              { label: 'Services', href: '#services' },
+              { label: 'Features', href: '#features' },
+              { label: 'Solutions', href: '#use-cases' }
+            ].map((item) => (
+              <li key={item.label}>
                 <a
-                  href={`#${item.toLowerCase().replace(' ', '-')}`}
+                  href={item.href}
                   className="text-sm font-medium text-slate-400 hover:text-white transition-colors relative group"
                 >
-                  {item}
+                  {item.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>
@@ -87,17 +91,22 @@ export default function Header() {
           </div>
         </nav>
 
+
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 p-4 bg-slate-950/95 backdrop-blur-xl border-b border-white/5 animate-fadeInUp">
             <ul className="flex flex-col gap-2">
-              {['Services', 'Features', 'Solutions'].map((item) => (
-                <li key={item}>
+              {[
+                { label: 'Services', href: '#services' },
+                { label: 'Features', href: '#features' },
+                { label: 'Solutions', href: '#use-cases' }
+              ].map((item) => (
+                <li key={item.label}>
                   <a
-                    href={`#${item.toLowerCase().replace(' ', '-')}`}
+                    href={item.href}
                     className="block py-3 px-4 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {item}
+                    {item.label}
                   </a>
                 </li>
               ))}
