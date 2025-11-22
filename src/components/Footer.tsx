@@ -53,7 +53,7 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
               <ul className="space-y-4">
                 {[
                   { label: 'Our Work', href: '#' },
-                  { label: 'Admin Portal', href: '#' },
+                  { label: 'Admin Portal', href: '/admin' },
                   { label: 'Get Quote', href: '#' },
                 ].map((item) => (
                   <li key={item.label}>
