@@ -16,22 +16,39 @@ import AGUISection from './components/AGUISection';
 import WorkflowSection from './components/WorkflowSection';
 import FAQ from './components/FAQ';
 
+import Login from './pages/Login';
+
 function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Simple check for admin route
+    // Check for admin route
     if (window.location.pathname === '/admin') {
-      setIsAdmin(true);
+      setIsAdminRoute(true);
+      // Check for existing session
+      const session = localStorage.getItem('siwaht_admin_session');
+      if (session === 'true') {
+        setIsAuthenticated(true);
+      }
     }
   }, []);
 
-  if (isAdmin) {
+  const handleLogin = () => {
+    localStorage.setItem('siwaht_admin_session', 'true');
+    setIsAuthenticated(true);
+  };
+
+  if (isAdminRoute) {
     return (
       <VideoProvider>
         <ThemeProvider>
-          <Admin />
+          {isAuthenticated ? (
+            <Admin />
+          ) : (
+            <Login onLogin={handleLogin} />
+          )}
         </ThemeProvider>
       </VideoProvider>
     );
