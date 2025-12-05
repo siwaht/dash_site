@@ -1,9 +1,9 @@
-import { Bot, Database, MessageSquare, Brain, Activity, Video, Sparkles } from 'lucide-react';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { Bot, Database, MessageSquare, Brain, Video, Sparkles } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback, ElementType } from 'react';
 
 interface WorkflowNode {
   id: string;
-  icon: any;
+  icon: ElementType;
   label: string;
   sublabel?: string;
   desktop: { x: number; y: number };
