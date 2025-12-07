@@ -57,7 +57,7 @@ export default function AIAgentArchitecture() {
       icon: MessageSquare,
       label: 'Input',
       sublabel: 'User Query',
-      desktop: { x: 15, y: 50 },
+      desktop: { x: 15, y: 30 },
       mobile: { x: 50, y: 10 },
       type: 'primary'
     },
@@ -66,7 +66,7 @@ export default function AIAgentArchitecture() {
       icon: Bot,
       label: 'AI Agent',
       sublabel: 'Orchestrator',
-      desktop: { x: 50, y: 50 },
+      desktop: { x: 50, y: 30 },
       mobile: { x: 50, y: 35 },
       type: 'agent'
     },
@@ -75,7 +75,7 @@ export default function AIAgentArchitecture() {
       icon: Sparkles,
       label: 'Output',
       sublabel: 'Response',
-      desktop: { x: 85, y: 50 },
+      desktop: { x: 85, y: 30 },
       mobile: { x: 50, y: 90 },
       type: 'primary'
     },
@@ -83,32 +83,32 @@ export default function AIAgentArchitecture() {
       id: 'llm',
       icon: Brain,
       label: 'LLM',
-      desktop: { x: 35, y: 20 },
-      mobile: { x: 20, y: 55 },
+      desktop: { x: 25, y: 70 },
+      mobile: { x: 25, y: 60 },
       type: 'service'
     },
     {
       id: 'memory',
       icon: Database,
       label: 'Memory',
-      desktop: { x: 65, y: 20 },
-      mobile: { x: 80, y: 55 },
+      desktop: { x: 42, y: 80 },
+      mobile: { x: 75, y: 60 },
       type: 'service'
     },
     {
       id: 'vector',
       icon: Database,
       label: 'Vector Store',
-      desktop: { x: 35, y: 80 },
-      mobile: { x: 20, y: 75 },
+      desktop: { x: 58, y: 80 },
+      mobile: { x: 25, y: 75 },
       type: 'service'
     },
     {
       id: 'embeddings',
       icon: Video,
       label: 'Embeddings',
-      desktop: { x: 65, y: 80 },
-      mobile: { x: 80, y: 75 },
+      desktop: { x: 75, y: 70 },
+      mobile: { x: 75, y: 75 },
       type: 'service'
     }
   ];
@@ -130,13 +130,16 @@ export default function AIAgentArchitecture() {
       { time: 200, action: () => { setActiveNode('trigger'); setCurrentStageLabel('Receiving input...'); } },
       { time: 1000, action: () => { setCompletedNodes(['trigger']); setActiveConnections(['trigger-agent']); } },
       { time: 1500, action: () => { setCompletedConnections(['trigger-agent']); setActiveNode('agent'); setCurrentStageLabel('Agent processing...'); } },
-      { time: 2500, action: () => { setActiveConnections(['agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings']); setCurrentStageLabel('Querying services...'); } },
-      { time: 3500, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings']); setActiveNode('llm'); setActiveNode('memory'); setActiveNode('vector'); setActiveNode('embeddings'); } },
-      { time: 4500, action: () => { setCompletedNodes(['trigger', 'llm', 'memory', 'vector', 'embeddings']); setActiveNode('agent'); setCurrentStageLabel('Synthesizing response...'); } },
-      { time: 5500, action: () => { setActiveConnections(['agent-output']); } },
-      { time: 6200, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings', 'agent-output']); setActiveNode('output'); setCurrentStageLabel('Delivering output...'); } },
-      { time: 7200, action: () => { setCompletedNodes(['trigger', 'llm', 'memory', 'vector', 'embeddings', 'agent', 'output']); setCurrentStageLabel('Complete'); } },
-      { time: 8500, action: () => { setCurrentStageLabel(''); setActiveNode(null); } }
+      { time: 2500, action: () => { setActiveConnections(['agent-llm', 'agent-memory']); setCurrentStageLabel('Accessing LLM and memory...'); } },
+      { time: 3000, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory']); setActiveNode('llm'); setActiveNode('memory'); } },
+      { time: 4000, action: () => { setCompletedNodes(['trigger', 'llm', 'memory']); setActiveNode('agent'); setCurrentStageLabel('Retrieving knowledge...'); } },
+      { time: 4800, action: () => { setActiveConnections(['agent-vector', 'agent-embeddings']); } },
+      { time: 5300, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings']); setActiveNode('vector'); setActiveNode('embeddings'); } },
+      { time: 6300, action: () => { setCompletedNodes(['trigger', 'llm', 'memory', 'vector', 'embeddings']); setActiveNode('agent'); setCurrentStageLabel('Generating response...'); } },
+      { time: 7200, action: () => { setActiveConnections(['agent-output']); } },
+      { time: 7800, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings', 'agent-output']); setActiveNode('output'); } },
+      { time: 8800, action: () => { setCompletedNodes(['trigger', 'llm', 'memory', 'vector', 'embeddings', 'agent', 'output']); setCurrentStageLabel('Complete!'); } },
+      { time: 9500, action: () => { setCurrentStageLabel(''); setActiveNode(null); } }
     ];
 
     stages.forEach(({ time, action }) => {
@@ -151,7 +154,7 @@ export default function AIAgentArchitecture() {
     const loop = () => {
       if (!isAnimatingRef.current) return;
       startAnimation();
-      animationTimers.current.push(setTimeout(loop, 9500));
+      animationTimers.current.push(setTimeout(loop, 11000));
     };
 
     loop();
@@ -213,75 +216,53 @@ export default function AIAgentArchitecture() {
 
     let pathD: string;
 
-    // Enhanced curved logic for smoother "organic" feel
-    const dist = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-
+    // Improved path logic for cleaner curves
     if (isMobile) {
-      const midY = (startY + endY) / 2;
-      // Add subtle curvature reset for vertical lines
+      // Vertical flow logic
       if (Math.abs(startX - endX) < 5) {
+        // Straight vertical line
         pathD = `M ${startX},${startY} L ${endX},${endY}`;
       } else {
+        // Curved line for branching
+        const midY = (startY + endY) / 2;
         pathD = `M ${startX},${startY} C ${startX},${midY} ${endX},${midY} ${endX},${endY}`;
       }
     } else {
-      // Horizontal heavy flow
-      const controlOffset = dist * 0.4;
-      // If it's a primary horizontal flow (trigger -> agent -> output)
-      if (conn.to === 'agent' || conn.from === 'agent') {
-        if (conn.to === 'output' || conn.from === 'trigger') {
-          // S-curve for horizontal
-          pathD = `M ${startX},${startY} C ${startX + controlOffset},${startY} ${endX - controlOffset},${endY} ${endX},${endY}`;
-        } else {
-          // Radiation style for services (agent -> services)
-          // We want them to look like they are branching out from the center
-          pathD = `M ${startX},${startY} L ${endX},${endY}`;
-        }
-      } else {
+      // Desktop flow logic
+      if (Math.abs(startY - endY) < 5) {
+        // Horizontal line
         pathD = `M ${startX},${startY} L ${endX},${endY}`;
+      } else {
+        // Curved line to services
+        const controlY = startY + (endY - startY) * 0.6;
+        pathD = `M ${startX},${startY} C ${startX},${controlY} ${endX},${controlY} ${endX},${endY}`;
       }
     }
 
-    const strokeColor = status === 'completed' ? '#34d399' : status === 'active' ? '#06b6d4' : '#334155'; // emerald-400 / cyan-500 / slate-700
-    const strokeOpacity = status === 'idle' ? 0.2 : 0.6;
-    const strokeWidth = status === 'active' ? 1.5 : 1;
-
-    // Comet effect gradient definition would be global, but here we simulate with path manipulation or layered paths
+    const strokeColor = status === 'completed' ? '#10b981' : status === 'active' ? '#06b6d4' : '#334155';
+    const strokeWidth = status === 'active' ? '0.4' : '0.2';
+    const opacity = status === 'idle' ? '0.3' : '1';
 
     return (
       <g key={index}>
-        {/* Base Path (Track) */}
         <path
+          id={pathId}
           d={pathD}
           fill="none"
           stroke={strokeColor}
           strokeWidth={strokeWidth}
-          strokeDasharray={conn.style === 'dashed' ? '4,4' : 'none'}
-          opacity={strokeOpacity}
+          strokeDasharray={conn.style === 'dashed' ? '1,1' : 'none'}
+          opacity={opacity}
           strokeLinecap="round"
           className="transition-all duration-500"
         />
-
-        {/* Active Particle (Comet) */}
         {status === 'active' && (
-          <>
-            {/* Glow Trail */}
-            <circle r="3" fill="#22d3ee" className="filter blur-[4px]">
-              <animateMotion dur="1s" repeatCount="1" keyPoints="0;1" keyTimes="0;1" calcMode="linear">
-                <mpath href={`#${pathId}`} />
-              </animateMotion>
-            </circle>
-            {/* Core Particle */}
-            <circle r="1.5" fill="#f0fdfa">
-              <animateMotion dur="1s" repeatCount="1" keyPoints="0;1" keyTimes="0;1" calcMode="linear">
-                <mpath href={`#${pathId}`} />
-              </animateMotion>
-            </circle>
-          </>
+          <circle r="0.6" fill="#06b6d4" className="filter drop-shadow-[0_0_2px_rgba(6,182,212,0.8)]">
+            <animateMotion dur="1.5s" repeatCount="indefinite">
+              <mpath href={`#${pathId}`} />
+            </animateMotion>
+          </circle>
         )}
-
-        {/* Invisible path for reference */}
-        <path id={pathId} d={pathD} fill="none" stroke="transparent" />
       </g>
     );
   };
@@ -302,59 +283,48 @@ export default function AIAgentArchitecture() {
           zIndex: isAgent ? 20 : 10
         }}
       >
-        <div className="flex flex-col items-center gap-3 group">
+        <div className="flex flex-col items-center gap-2 group">
           <div
-            className={`relative flex items-center justify-center transition-all duration-500 backdrop-blur-xl border
+            className={`relative flex items-center justify-center transition-all duration-500 backdrop-blur-md
               ${isAgent
-                ? 'w-24 h-24 sm:w-28 sm:h-28 rounded-3xl' // Bigger Agent Node
+                ? 'w-20 h-20 sm:w-24 sm:h-24 rounded-2xl'
                 : isService
-                  ? 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl'
-                  : 'w-16 h-16 sm:w-20 sm:h-20 rounded-2xl'
+                  ? 'w-12 h-12 sm:w-14 sm:h-14 rounded-xl'
+                  : 'w-16 h-12 sm:w-32 sm:h-14 rounded-lg'
               }
               ${status === 'active'
-                ? 'bg-cyan-500/20 border-cyan-400/50 shadow-[0_0_30px_rgba(6,182,212,0.4)] scale-110'
+                ? 'bg-cyan-950/80 border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-110'
                 : status === 'completed'
-                  ? 'bg-emerald-500/20 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                  : 'bg-slate-900/50 border-white/10 hover:border-white/20 hover:bg-slate-800/50'
+                  ? 'bg-emerald-950/80 border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                  : 'bg-slate-900/60 border border-slate-700/50 hover:border-slate-600'
               }
             `}
           >
-            {/* Ping Effect for Active State */}
-            {status === 'active' && (
-              <div className={`absolute inset-0 rounded-inherit animate-ping opacity-75 ${isAgent ? 'bg-cyan-400/20' : 'bg-cyan-500/30'}`}></div>
+            {/* Inner Glow for Agent */}
+            {isAgent && status === 'active' && (
+              <div className="absolute inset-0 rounded-2xl bg-cyan-400/10 animate-pulse"></div>
             )}
 
-            <div className={`relative z-10 transition-colors duration-300 ${status === 'active' ? 'text-cyan-300' :
-                status === 'completed' ? 'text-emerald-300' :
-                  'text-slate-400 group-hover:text-slate-200'
+            <div className={`transition-colors duration-300 ${status === 'active' ? 'text-cyan-400' : status === 'completed' ? 'text-emerald-400' : 'text-slate-400'
               }`}>
-              <node.icon
-                className={`${isAgent ? 'w-10 h-10 sm:w-12 sm:h-12' : 'w-6 h-6 sm:w-7 sm:h-7'}`}
-                strokeWidth={isAgent ? 1.5 : 2}
-              />
+              <node.icon className={`${isAgent ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-5 h-5 sm:w-6 sm:h-6'}`} strokeWidth={1.5} />
             </div>
 
-            {/* Status Micro-indicator */}
+            {/* Status Indicator Dot */}
             {status === 'active' && (
-              <div className="absolute top-0 right-0 w-3 h-3 -mt-1 -mr-1 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse"></div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full border-2 border-slate-900 animate-ping"></div>
             )}
-            {status === 'completed' && (
-              <div className="absolute top-0 right-0 w-3 h-3 -mt-1 -mr-1 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-            )}
-
           </div>
 
           {/* Labels */}
-          <div className={`flex flex-col items-center transition-all duration-300 ${status === 'active' ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-70'
+          <div className={`flex flex-col items-center transition-all duration-300 ${status === 'active' ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-80'
             }`}>
-            <span className={`text-[10px] sm:text-xs font-bold tracking-wider uppercase ${status === 'active' ? 'text-cyan-200 shadow-cyan-500/50 drop-shadow-sm' :
-                status === 'completed' ? 'text-emerald-300' :
-                  'text-slate-400'
+            <span className={`text-[10px] sm:text-xs font-bold tracking-wide uppercase ${status === 'active' ? 'text-cyan-300' : status === 'completed' ? 'text-emerald-300' : 'text-slate-400'
               }`}>
               {node.label}
             </span>
             {node.sublabel && !isMobile && (
-              <span className="text-[9px] text-slate-500 mt-0.5 tracking-tight">{node.sublabel}</span>
+              <span className="text-[9px] text-slate-500 mt-0.5">{node.sublabel}</span>
             )}
           </div>
         </div>
@@ -363,46 +333,55 @@ export default function AIAgentArchitecture() {
   };
 
   return (
-    <div ref={sectionRef} className="w-full max-w-6xl mx-auto py-12 md:py-20 relative px-4">
-
-      {/* Background Ambience */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-cyan-900/5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div ref={sectionRef} className="w-full max-w-5xl mx-auto mt-8 md:mt-16 relative">
 
       {/* Main Container */}
-      <div className="relative bg-gradient-to-b from-slate-900/80 to-slate-950/90 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-2xl overflow-hidden ring-1 ring-white/5">
+      <div className="relative bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-white/5 shadow-2xl overflow-hidden">
 
         {/* Header / Status Bar */}
-        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-30 pointer-events-none">
-          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-slate-950/40 border border-white/5 backdrop-blur-lg">
-            <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${currentStageLabel ? 'bg-cyan-400 shadow-cyan-500/50 animate-pulse' : 'bg-slate-700'
-              }`}></div>
-            <span className="text-sm font-medium text-slate-200 tracking-wide">
+        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 pointer-events-none">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/50 border border-white/5 backdrop-blur-md">
+            <div className={`w-2 h-2 rounded-full ${currentStageLabel ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'}`}></div>
+            <span className="text-xs font-medium text-slate-300">
               {currentStageLabel || 'System Idle'}
             </span>
           </div>
-
-          {/* Decorative dots */}
-          <div className="flex gap-2 opacity-50">
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+          <div className="hidden sm:flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-red-500/20 border border-red-500/50"></div>
+            <div className="w-2 h-2 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+            <div className="w-2 h-2 rounded-full bg-green-500/20 border border-green-500/50"></div>
           </div>
         </div>
 
         {/* Grid Background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]"></div>
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
         </div>
 
         {/* Animation Area */}
-        <div className={`relative w-full transition-all duration-500 ${isMobile ? 'h-[600px]' : 'h-[500px]'}`}>
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+        <div className={`relative w-full transition-all duration-500 ${isMobile ? 'h-[550px]' : 'h-[450px]'}`}>
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 1 }}>
+            <defs>
+              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0" />
+                <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
+                <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+              </linearGradient>
+            </defs>
             {connections.map((conn, index) => renderConnection(conn, index))}
           </svg>
 
           {nodes.map(node => renderNode(node))}
         </div>
       </div>
+
+      {/* Decorative Glows */}
+      <div className="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
     </div>
   );
 }
