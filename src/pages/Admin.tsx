@@ -31,14 +31,17 @@ export default function Admin() {
             const fileName = `${activeTab}-${Date.now()}.${fileExt}`;
             const filePath = `${fileName}`;
 
-            const { error: uploadError } = await supabase.storage
+            const { data, error: uploadError } = await supabase.storage
                 .from('videos')
                 .upload(filePath, file, {
                     cacheControl: '3600',
                     upsert: false
                 });
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error('Upload error details:', uploadError);
+                throw new Error(uploadError.message || 'Upload failed');
+            }
 
             const { data: { publicUrl } } = supabase.storage
                 .from('videos')
@@ -50,9 +53,9 @@ export default function Admin() {
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload error:', error);
-            alert('Failed to upload video. Please try again.');
+            alert(`Failed to upload video: ${error.message || 'Please try again.'}`);
         } finally {
             setUploading(false);
             setTimeout(() => setUploadProgress(0), 1000);
