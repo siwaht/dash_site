@@ -58,12 +58,12 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
 export function VideoProvider({ children }: { children: React.ReactNode }) {
     const [videos, setVideos] = useState<Record<string, VideoData>>(() => {
-        const saved = localStorage.getItem('siwaht_videos');
+        const saved = localStorage.getItem('dashboardx_videos');
         return saved ? JSON.parse(saved) : defaultVideos;
     });
 
     useEffect(() => {
-        localStorage.setItem('siwaht_videos', JSON.stringify(videos));
+        localStorage.setItem('dashboardx_videos', JSON.stringify(videos));
     }, [videos]);
 
     const updateVideo = (id: string, data: Partial<VideoData>) => {

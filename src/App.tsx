@@ -28,7 +28,7 @@ function App() {
     if (window.location.pathname === '/admin') {
       setIsAdminRoute(true);
       // Check for existing session
-      const session = localStorage.getItem('siwaht_admin_session');
+      const session = localStorage.getItem('dashboardx_admin_session');
       if (session === 'true') {
         setIsAuthenticated(true);
       }
@@ -36,7 +36,7 @@ function App() {
   }, []);
 
   const handleLogin = () => {
-    localStorage.setItem('siwaht_admin_session', 'true');
+    localStorage.setItem('dashboardx_admin_session', 'true');
     setIsAuthenticated(true);
   };
 

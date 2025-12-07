@@ -1,13 +1,69 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useVideos } from '../contexts/VideoContext';
-import { Save, Upload, LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { Save, Upload, LayoutDashboard, ArrowLeft, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function Admin() {
     const { videos, updateVideo } = useVideos();
     const [activeTab, setActiveTab] = useState<string>(Object.keys(videos)[0]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleUrlChange = (id: string, url: string) => {
         updateVideo(id, { videoUrl: url });
+    };
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !supabase) return;
+
+        if (!file.type.startsWith('video/')) {
+            alert('Please select a valid video file');
+            return;
+        }
+
+        setUploading(true);
+        setUploadProgress(0);
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${activeTab}-${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from('videos')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error('Upload error details:', uploadError);
+                throw new Error(uploadError.message || 'Upload failed');
+            }
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('videos')
+                .getPublicUrl(filePath);
+
+            updateVideo(activeTab, { videoUrl: publicUrl });
+            setUploadProgress(100);
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        } catch (error: any) {
+            console.error('Upload error:', error);
+            alert(`Failed to upload video: ${error.message || 'Please try again.'}`);
+        } finally {
+            setUploading(false);
+            setTimeout(() => setUploadProgress(0), 1000);
+        }
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
     };
 
     return (
@@ -87,13 +143,31 @@ export default function Admin() {
                                     </p>
                                 </div>
 
-                                {/* File Upload Simulation */}
-                                <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-indigo-500/50 hover:bg-white/5 transition-all duration-300 cursor-pointer group">
+                                {/* File Upload */}
+                                <div
+                                    onClick={handleUploadClick}
+                                    className={`border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-indigo-500/50 hover:bg-white/5 transition-all duration-300 cursor-pointer group ${uploading ? 'pointer-events-none opacity-50' : ''}`}
+                                >
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="video/*"
+                                        onChange={handleFileUpload}
+                                        className="hidden"
+                                    />
                                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                        <Upload className="w-6 h-6 text-slate-400 group-hover:text-indigo-400" />
+                                        {uploading ? (
+                                            <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                                        ) : (
+                                            <Upload className="w-6 h-6 text-slate-400 group-hover:text-indigo-400" />
+                                        )}
                                     </div>
-                                    <h3 className="text-white font-medium mb-1">Upload New Video</h3>
-                                    <p className="text-sm text-slate-400">Drag and drop or click to browse</p>
+                                    <h3 className="text-white font-medium mb-1">
+                                        {uploading ? 'Uploading...' : 'Upload New Video'}
+                                    </h3>
+                                    <p className="text-sm text-slate-400">
+                                        {uploading ? `${uploadProgress}% complete` : 'Drag and drop or click to browse'}
+                                    </p>
                                 </div>
                             </div>
                         </div>
