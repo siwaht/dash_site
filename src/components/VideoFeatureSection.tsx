@@ -1,6 +1,6 @@
 import { Check, Clock, Zap, Star, Volume2, VolumeX } from 'lucide-react';
 import { useVideos } from '../contexts/VideoContext';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface VideoFeatureSectionProps {
     sectionId: string;
@@ -11,7 +11,32 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
     const { videos } = useVideos();
     const data = videos[sectionId];
     const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [isMuted, setIsMuted] = useState(true);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting && videoRef.current) {
+                        videoRef.current.muted = true;
+                        setIsMuted(true);
+                    }
+                });
+            },
+            { threshold: 0.5 }
+        );
+
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+
+        return () => {
+            if (containerRef.current) {
+                observer.unobserve(containerRef.current);
+            }
+        };
+    }, []);
 
     const toggleMute = () => {
         if (videoRef.current) {
@@ -28,7 +53,7 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                 <div className={`flex flex-col ${alignment === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-16`}>
 
                     {/* Video Card Side */}
-                    <div className="w-full lg:w-1/2">
+                    <div ref={containerRef} className="w-full lg:w-1/2">
                         <div className="relative group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                             <div className="relative bg-slate-900 rounded-2xl p-2 border border-white/10 shadow-2xl">
