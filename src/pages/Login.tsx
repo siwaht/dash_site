@@ -14,7 +14,7 @@ export default function Login({ onLogin }: LoginProps) {
         e.preventDefault();
         setError('');
 
-        if (email === 'cc@siwaht.com' && password === 'Hola173!') {
+        if (email === 'cc@dashboardx.com' && password === 'Hola173!') {
             onLogin();
         } else {
             setError('Invalid credentials. Please try again.');

@@ -23,9 +23,9 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
             <div className="space-y-6 text-center md:text-left">
               <div className="flex items-center gap-2 justify-center md:justify-start">
                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">S</span>
+                  <span className="text-white font-bold text-xl">D</span>
                 </div>
-                <span className="font-display text-2xl font-bold text-white tracking-tight">Siwaht</span>
+                <span className="font-display text-2xl font-bold text-white tracking-tight">DashboardX</span>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed mx-auto md:mx-0">
                 Your Presence, Perfected
@@ -102,7 +102,7 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
 
         <div className="pt-8 border-t border-white/5 text-center">
           <p className="text-slate-500 text-sm">
-            &copy; {currentYear} Siwaht. All rights reserved.
+            &copy; {currentYear} DashboardX. All rights reserved.
           </p>
         </div>
       </div>
