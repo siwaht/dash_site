@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useVideos } from '../contexts/VideoContext';
 import { Save, Upload, LayoutDashboard, ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getVideoPlayerConfig } from '../utils/videoUtils';
 
 export default function Admin() {
     const { videos, updateVideo } = useVideos();
@@ -134,12 +135,25 @@ export default function Admin() {
                             <div className="space-y-8">
                                 {/* Video Preview */}
                                 <div className="aspect-video rounded-xl overflow-hidden bg-slate-950 border border-white/10 relative group">
-                                    <video
-                                        key={videos[activeTab].videoUrl} // Force reload on URL change
-                                        src={videos[activeTab].videoUrl}
-                                        className="w-full h-full object-cover"
-                                        controls
-                                    />
+                                    {(() => {
+                                        const playerConfig = getVideoPlayerConfig(videos[activeTab].videoUrl);
+                                        return playerConfig.type === 'embed' ? (
+                                            <iframe
+                                                key={videos[activeTab].videoUrl}
+                                                src={playerConfig.url}
+                                                className="w-full h-full"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            />
+                                        ) : (
+                                            <video
+                                                key={videos[activeTab].videoUrl}
+                                                src={playerConfig.url}
+                                                className="w-full h-full object-cover"
+                                                controls
+                                            />
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* URL Input */}
@@ -159,7 +173,7 @@ export default function Admin() {
                                         </button>
                                     </div>
                                     <p className="text-xs text-slate-500">
-                                        Enter a direct link to an MP4 file or a supported video URL.
+                                        Enter a direct link to an MP4 file or paste URLs from Gumlet, YouTube, Vimeo, or Dailymotion.
                                     </p>
                                 </div>
 

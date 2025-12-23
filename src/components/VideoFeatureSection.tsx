@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Play, Pause, Check, Clock, Zap, Star } from 'lucide-react';
 import { useVideos } from '../contexts/VideoContext';
+import { getVideoPlayerConfig } from '../utils/videoUtils';
 
 interface VideoFeatureSectionProps {
     sectionId: string;
@@ -14,6 +15,9 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
     const [isPlaying, setIsPlaying] = useState(true);
 
     if (!data) return null;
+
+    const playerConfig = getVideoPlayerConfig(data.videoUrl);
+    const isEmbed = playerConfig.type === 'embed';
 
     const togglePlayPause = () => {
         if (videoRef.current) {
@@ -37,39 +41,49 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                             <div className="relative bg-slate-900 rounded-2xl p-2 border border-white/10 shadow-2xl">
                                 <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950">
-                                    {/* Video Player Placeholder */}
-                                    <video
-                                        ref={videoRef}
-                                        src={data.videoUrl}
-                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                                        loop
-                                        muted
-                                        autoPlay
-                                        playsInline
-                                    />
+                                    {isEmbed ? (
+                                        <iframe
+                                            src={playerConfig.url}
+                                            className="w-full h-full"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <>
+                                            <video
+                                                ref={videoRef}
+                                                src={playerConfig.url}
+                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                                                loop
+                                                muted
+                                                autoPlay
+                                                playsInline
+                                            />
 
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
 
-                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                                        <div>
-                                            <p className="text-white font-semibold text-lg">{data.title}</p>
-                                            <div className="flex items-center gap-2 text-xs text-slate-300 mt-1">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {data.stats.duration}</span>
-                                                <span className="w-1 h-1 rounded-full bg-slate-500"></span>
-                                                <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {data.stats.quality}</span>
+                                            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                                                <div>
+                                                    <p className="text-white font-semibold text-lg">{data.title}</p>
+                                                    <div className="flex items-center gap-2 text-xs text-slate-300 mt-1">
+                                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {data.stats.duration}</span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-500"></span>
+                                                        <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {data.stats.quality}</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={togglePlayPause}
+                                                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-indigo-600 transition-all duration-300"
+                                                >
+                                                    {isPlaying ? (
+                                                        <Pause className="w-4 h-4 fill-current" />
+                                                    ) : (
+                                                        <Play className="w-4 h-4 fill-current" />
+                                                    )}
+                                                </button>
                                             </div>
-                                        </div>
-                                        <button
-                                            onClick={togglePlayPause}
-                                            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-indigo-600 transition-all duration-300"
-                                        >
-                                            {isPlaying ? (
-                                                <Pause className="w-4 h-4 fill-current" />
-                                            ) : (
-                                                <Play className="w-4 h-4 fill-current" />
-                                            )}
-                                        </button>
-                                    </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Stats Grid */}
