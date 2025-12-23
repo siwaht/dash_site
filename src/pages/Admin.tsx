@@ -101,8 +101,11 @@ export default function Admin() {
                                                 key={videos[activeTab].videoUrl}
                                                 src={playerConfig.url}
                                                 className="w-full h-full"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                                                 allowFullScreen
+                                                frameBorder="0"
+                                                loading="lazy"
+                                                referrerPolicy="no-referrer-when-downgrade"
                                             />
                                         ) : (
                                             <video

@@ -13,11 +13,14 @@ export function getVideoPlayerConfig(url: string): VideoPlayerConfig {
     const hostname = urlObj.hostname.toLowerCase();
 
     if (hostname.includes('gumlet.tv') || hostname.includes('gumlet.io')) {
-      const videoId = urlObj.pathname.split('/').pop();
-      return {
-        type: 'embed',
-        url: `https://play.gumlet.io/embed/${videoId}`
-      };
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+      const videoId = pathParts[pathParts.length - 1];
+      if (videoId) {
+        return {
+          type: 'embed',
+          url: `https://play.gumlet.io/embed/${videoId}`
+        };
+      }
     }
 
     if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
