@@ -5,15 +5,36 @@ import { supabase } from '../lib/supabase';
 import { getVideoPlayerConfig } from '../utils/videoUtils';
 
 export default function Admin() {
-    const { videos, updateVideo } = useVideos();
+    const { videos, updateVideo, saveVideo } = useVideos();
     const [activeTab, setActiveTab] = useState<string>(Object.keys(videos)[0]);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleUrlChange = (id: string, url: string) => {
         updateVideo(id, { videoUrl: url });
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        setSaveError(null);
+        setSaveSuccess(false);
+
+        const result = await saveVideo(activeTab);
+
+        if (result.success) {
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } else {
+            setSaveError(result.error || 'Failed to save video');
+            setTimeout(() => setSaveError(null), 5000);
+        }
+
+        setSaving(false);
     };
 
     const handleLogout = () => {
@@ -64,6 +85,12 @@ export default function Admin() {
                 .getPublicUrl(filePath);
 
             updateVideo(activeTab, { videoUrl: publicUrl });
+
+            const saveResult = await saveVideo(activeTab, { videoUrl: publicUrl });
+            if (!saveResult.success) {
+                throw new Error(saveResult.error || 'Failed to save video URL to database');
+            }
+
             setUploadSuccess(true);
             setTimeout(() => setUploadSuccess(false), 3000);
         } catch (error) {
@@ -167,11 +194,34 @@ export default function Admin() {
                                             className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                                             placeholder="https://example.com/video.mp4"
                                         />
-                                        <button className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
-                                            <Save className="w-4 h-4" />
-                                            Save
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={saving}
+                                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {saving ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Saving...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Save className="w-4 h-4" />
+                                                    Save
+                                                </>
+                                            )}
                                         </button>
                                     </div>
+                                    {saveError && (
+                                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                            <p className="text-sm text-red-400">{saveError}</p>
+                                        </div>
+                                    )}
+                                    {saveSuccess && (
+                                        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                                            <p className="text-sm text-emerald-400">Video URL saved successfully!</p>
+                                        </div>
+                                    )}
                                     <p className="text-xs text-slate-500">
                                         Enter a direct link to an MP4 file or paste URLs from Gumlet, YouTube, Vimeo, or Dailymotion.
                                     </p>

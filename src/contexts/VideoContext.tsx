@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 export interface VideoData {
     id: string;
@@ -17,6 +18,8 @@ export interface VideoData {
 interface VideoContextType {
     videos: Record<string, VideoData>;
     updateVideo: (id: string, data: Partial<VideoData>) => void;
+    saveVideo: (id: string, data?: Partial<VideoData>) => Promise<{ success: boolean; error?: string }>;
+    loading: boolean;
 }
 
 const defaultVideos: Record<string, VideoData> = {
@@ -57,14 +60,47 @@ const defaultVideos: Record<string, VideoData> = {
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
 export function VideoProvider({ children }: { children: React.ReactNode }) {
-    const [videos, setVideos] = useState<Record<string, VideoData>>(() => {
-        const saved = localStorage.getItem('siwaht_videos');
-        return saved ? JSON.parse(saved) : defaultVideos;
-    });
+    const [videos, setVideos] = useState<Record<string, VideoData>>(defaultVideos);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        localStorage.setItem('siwaht_videos', JSON.stringify(videos));
-    }, [videos]);
+        loadVideosFromDatabase();
+    }, []);
+
+    const loadVideosFromDatabase = async () => {
+        try {
+            if (!supabase) {
+                setLoading(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('video_metadata')
+                .select('*');
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                const videosMap: Record<string, VideoData> = {};
+                data.forEach((video: any) => {
+                    videosMap[video.id] = {
+                        id: video.id,
+                        title: video.title,
+                        description: video.description,
+                        videoUrl: video.video_url,
+                        thumbnailUrl: video.thumbnail_url,
+                        stats: video.stats,
+                        features: video.features
+                    };
+                });
+                setVideos(videosMap);
+            }
+        } catch (error) {
+            console.error('Error loading videos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const updateVideo = (id: string, data: Partial<VideoData>) => {
         setVideos(prev => ({
@@ -73,8 +109,40 @@ export function VideoProvider({ children }: { children: React.ReactNode }) {
         }));
     };
 
+    const saveVideo = async (id: string, data?: Partial<VideoData>): Promise<{ success: boolean; error?: string }> => {
+        try {
+            if (!supabase) {
+                return { success: false, error: 'Database not available' };
+            }
+
+            const video = data ? { ...videos[id], ...data } : videos[id];
+            if (!video) {
+                return { success: false, error: 'Video not found' };
+            }
+
+            const { error } = await supabase
+                .from('video_metadata')
+                .update({
+                    video_url: video.videoUrl,
+                    thumbnail_url: video.thumbnailUrl,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            return { success: true };
+        } catch (error) {
+            console.error('Error saving video:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to save video'
+            };
+        }
+    };
+
     return (
-        <VideoContext.Provider value={{ videos, updateVideo }}>
+        <VideoContext.Provider value={{ videos, updateVideo, saveVideo, loading }}>
             {children}
         </VideoContext.Provider>
     );
