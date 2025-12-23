@@ -1,4 +1,5 @@
-import { Play, Check, Clock, Zap, Star } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Play, Pause, Check, Clock, Zap, Star } from 'lucide-react';
 import { useVideos } from '../contexts/VideoContext';
 
 interface VideoFeatureSectionProps {
@@ -9,8 +10,21 @@ interface VideoFeatureSectionProps {
 export default function VideoFeatureSection({ sectionId, alignment = 'left' }: VideoFeatureSectionProps) {
     const { videos } = useVideos();
     const data = videos[sectionId];
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isPlaying, setIsPlaying] = useState(true);
 
     if (!data) return null;
+
+    const togglePlayPause = () => {
+        if (videoRef.current) {
+            if (isPlaying) {
+                videoRef.current.pause();
+            } else {
+                videoRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
 
     return (
         <section id={sectionId} className="py-24 relative overflow-hidden">
@@ -25,6 +39,7 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                                 <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950">
                                     {/* Video Player Placeholder */}
                                     <video
+                                        ref={videoRef}
                                         src={data.videoUrl}
                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
                                         loop
@@ -44,8 +59,15 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                                                 <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {data.stats.quality}</span>
                                             </div>
                                         </div>
-                                        <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-indigo-600 transition-all duration-300">
-                                            <Play className="w-4 h-4 fill-current" />
+                                        <button
+                                            onClick={togglePlayPause}
+                                            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-indigo-600 transition-all duration-300"
+                                        >
+                                            {isPlaying ? (
+                                                <Pause className="w-4 h-4 fill-current" />
+                                            ) : (
+                                                <Play className="w-4 h-4 fill-current" />
+                                            )}
                                         </button>
                                     </div>
                                 </div>
