@@ -1,30 +1,25 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useVideos } from '../contexts/VideoContext';
-import { Save, Upload, LayoutDashboard, ArrowLeft, Loader2, LogOut } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { Save, LayoutDashboard, ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { getVideoPlayerConfig } from '../utils/videoUtils';
 
 export default function Admin() {
     const { videos, updateVideo, saveVideo } = useVideos();
     const [activeTab, setActiveTab] = useState<string>(Object.keys(videos)[0]);
-    const [uploading, setUploading] = useState(false);
-    const [uploadError, setUploadError] = useState<string | null>(null);
-    const [uploadSuccess, setUploadSuccess] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleUrlChange = (id: string, url: string) => {
         updateVideo(id, { videoUrl: url });
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
         setSaving(true);
         setSaveError(null);
         setSaveSuccess(false);
 
-        const result = await saveVideo(activeTab);
+        const result = saveVideo(activeTab);
 
         if (result.success) {
             setSaveSuccess(true);
@@ -40,69 +35,6 @@ export default function Admin() {
     const handleLogout = () => {
         localStorage.removeItem('siwaht_admin_session');
         window.location.href = '/';
-    };
-
-    const handleUploadClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('video/')) {
-            setUploadError('Please select a valid video file');
-            setTimeout(() => setUploadError(null), 5000);
-            return;
-        }
-
-        if (!supabase) {
-            setUploadError('Storage service not available. Please check your configuration.');
-            setTimeout(() => setUploadError(null), 5000);
-            return;
-        }
-
-        setUploading(true);
-        setUploadError(null);
-        setUploadSuccess(false);
-
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('videos')
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('videos')
-                .getPublicUrl(filePath);
-
-            updateVideo(activeTab, { videoUrl: publicUrl });
-
-            const saveResult = await saveVideo(activeTab, { videoUrl: publicUrl });
-            if (!saveResult.success) {
-                throw new Error(saveResult.error || 'Failed to save video URL to database');
-            }
-
-            setUploadSuccess(true);
-            setTimeout(() => setUploadSuccess(false), 3000);
-        } catch (error) {
-            console.error('Upload error:', error);
-            setUploadError(error instanceof Error ? error.message : 'Failed to upload video');
-            setTimeout(() => setUploadError(null), 5000);
-        } finally {
-            setUploading(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
-        }
     };
 
     return (
@@ -225,47 +157,6 @@ export default function Admin() {
                                     <p className="text-xs text-slate-500">
                                         Enter a direct link to an MP4 file or paste URLs from Gumlet, YouTube, Vimeo, or Dailymotion.
                                     </p>
-                                </div>
-
-                                {/* File Upload */}
-                                <div>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="video/*"
-                                        onChange={handleFileChange}
-                                        className="hidden"
-                                    />
-                                    <div
-                                        onClick={handleUploadClick}
-                                        className={`border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-indigo-500/50 hover:bg-white/5 transition-all duration-300 cursor-pointer group ${
-                                            uploading ? 'opacity-50 pointer-events-none' : ''
-                                        }`}
-                                    >
-                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                            {uploading ? (
-                                                <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
-                                            ) : (
-                                                <Upload className="w-6 h-6 text-slate-400 group-hover:text-indigo-400" />
-                                            )}
-                                        </div>
-                                        <h3 className="text-white font-medium mb-1">
-                                            {uploading ? 'Uploading...' : 'Upload New Video'}
-                                        </h3>
-                                        <p className="text-sm text-slate-400">
-                                            {uploading ? 'Please wait while your video is being uploaded' : 'Click to browse and select a video file'}
-                                        </p>
-                                    </div>
-                                    {uploadError && (
-                                        <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                                            <p className="text-sm text-red-400">{uploadError}</p>
-                                        </div>
-                                    )}
-                                    {uploadSuccess && (
-                                        <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                                            <p className="text-sm text-emerald-400">Video uploaded successfully!</p>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
