@@ -64,13 +64,17 @@ export function VideoProvider({ children }: { children: React.ReactNode }) {
             try {
                 const parsed = JSON.parse(saved);
                 const merged = { ...defaultVideos };
+
                 Object.keys(defaultVideos).forEach(key => {
                     if (parsed[key]) {
                         merged[key] = {
                             ...defaultVideos[key],
                             ...parsed[key],
-                            // Ensure nested objects like stats are also merged
-                            stats: { ...defaultVideos[key].stats, ...(parsed[key].stats || {}) }
+                            // Deep merge stats
+                            stats: {
+                                ...defaultVideos[key].stats,
+                                ...(parsed[key].stats || {})
+                            }
                         };
                     }
                 });

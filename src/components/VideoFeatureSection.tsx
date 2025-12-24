@@ -57,7 +57,7 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                 });
             },
             {
-                threshold: 0.5, // 50% of the container must be visible
+                threshold: 0.1, // 10% visibility is enough to start/stop
             }
         );
 
