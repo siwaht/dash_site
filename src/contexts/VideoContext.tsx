@@ -60,7 +60,25 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 export function VideoProvider({ children }: { children: React.ReactNode }) {
     const [videos, setVideos] = useState<Record<string, VideoData>>(() => {
         const saved = localStorage.getItem('siwaht_videos');
-        return saved ? JSON.parse(saved) : defaultVideos;
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                // Merge with defaults to ensure all required sections exist
+                // We map over default keys to ensure we have at least those, 
+                // but we prefer the parsed values if they exist.
+                const merged = { ...defaultVideos };
+                Object.keys(parsed).forEach(key => {
+                    if (merged[key]) {
+                        merged[key] = { ...merged[key], ...parsed[key] };
+                    }
+                });
+                return merged;
+            } catch (error) {
+                console.error('Failed to parse saved videos:', error);
+                return defaultVideos;
+            }
+        }
+        return defaultVideos;
     });
 
     useEffect(() => {

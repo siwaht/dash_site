@@ -56,51 +56,45 @@ function App() {
     };
   }, []);
 
-  if (isAdminRoute) {
-    return (
-      <VideoProvider>
-        <ThemeProvider>
-          {isAuthenticated ? (
-            <Admin />
-          ) : (
-            <Login onLogin={handleLogin} />
-          )}
-        </ThemeProvider>
-      </VideoProvider>
-    );
-  }
-
   return (
     <VideoProvider>
       <ThemeProvider>
         <ErrorBoundary>
-          <div className="min-h-screen bg-slate-950 transition-colors duration-300">
-            <Header />
-            <main>
-              <Hero />
+          {isAdminRoute ? (
+            isAuthenticated ? (
+              <Admin />
+            ) : (
+              <Login onLogin={handleLogin} />
+            )
+          ) : (
+            <div className="min-h-screen bg-slate-950 transition-colors duration-300">
+              <Header />
+              <main>
+                <Hero />
 
-              {/* New Video Sections */}
-              <div id="services" className="space-y-0">
-                <VideoFeatureSection sectionId="chat-agents" alignment="left" />
-                <VideoFeatureSection sectionId="ai-avatars" alignment="right" />
-                <VideoFeatureSection sectionId="video-ads" alignment="left" />
-                <VideoFeatureSection sectionId="voice-agents" alignment="right" />
-              </div>
+                {/* New Video Sections */}
+                <div id="services" className="space-y-0">
+                  <VideoFeatureSection sectionId="chat-agents" alignment="left" />
+                  <VideoFeatureSection sectionId="ai-avatars" alignment="right" />
+                  <VideoFeatureSection sectionId="video-ads" alignment="left" />
+                  <VideoFeatureSection sectionId="voice-agents" alignment="right" />
+                </div>
 
-              <HowItWorks />
-              <AGUISection />
-              <WorkflowSection />
-              <Features />
-              <UseCases />
-              <FAQ />
-              <DemoForm />
-            </main>
-            <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
+                <HowItWorks />
+                <AGUISection />
+                <WorkflowSection />
+                <Features />
+                <UseCases />
+                <FAQ />
+                <DemoForm />
+              </main>
+              <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
 
-            {isPrivacyOpen && (
-              <PrivacyPolicy onClose={() => setIsPrivacyOpen(false)} />
-            )}
-          </div>
+              {isPrivacyOpen && (
+                <PrivacyPolicy onClose={() => setIsPrivacyOpen(false)} />
+              )}
+            </div>
+          )}
         </ErrorBoundary>
       </ThemeProvider>
     </VideoProvider>
