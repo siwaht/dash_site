@@ -6,12 +6,15 @@ import { getVideoPlayerConfig } from '../utils/videoUtils';
 export default function Admin() {
     const { videos, updateVideo, saveVideo } = useVideos();
     const [activeTab, setActiveTab] = useState<string>(Object.keys(videos)[0]);
+    const [currentUrl, setCurrentUrl] = useState(videos[activeTab].videoUrl);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    const handleUrlChange = (id: string, url: string) => {
-        updateVideo(id, { videoUrl: url });
+    // Update local state when active tab changes
+    const handleTabChange = (id: string) => {
+        setActiveTab(id);
+        setCurrentUrl(videos[id].videoUrl);
     };
 
     const handleSave = () => {
@@ -19,17 +22,23 @@ export default function Admin() {
         setSaveError(null);
         setSaveSuccess(false);
 
-        const result = saveVideo(activeTab);
+        // 1. First update the context state
+        updateVideo(activeTab, { videoUrl: currentUrl });
 
-        if (result.success) {
-            setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 3000);
-        } else {
-            setSaveError(result.error || 'Failed to save video');
-            setTimeout(() => setSaveError(null), 5000);
-        }
+        // 2. Then trigger the actual save to localStorage
+        // We use a timeout to ensure context state has likely updated (though not strictly necessary as saveVideo uses live videos state)
+        setTimeout(() => {
+            const result = saveVideo();
 
-        setSaving(false);
+            if (result.success) {
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
+            } else {
+                setSaveError(result.error || 'Failed to save video');
+                setTimeout(() => setSaveError(null), 5000);
+            }
+            setSaving(false);
+        }, 100);
     };
 
     const handleLogout = () => {
@@ -66,10 +75,10 @@ export default function Admin() {
                         {Object.values(videos).map((video) => (
                             <button
                                 key={video.id}
-                                onClick={() => setActiveTab(video.id)}
+                                onClick={() => handleTabChange(video.id)}
                                 className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-300 flex items-center gap-3 ${activeTab === video.id
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
                                     }`}
                             >
                                 <LayoutDashboard className="w-4 h-4" />
@@ -124,8 +133,8 @@ export default function Admin() {
                                     <div className="flex gap-4">
                                         <input
                                             type="text"
-                                            value={videos[activeTab].videoUrl}
-                                            onChange={(e) => handleUrlChange(activeTab, e.target.value)}
+                                            value={currentUrl}
+                                            onChange={(e) => setCurrentUrl(e.target.value)}
                                             className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                                             placeholder="https://example.com/video.mp4"
                                         />

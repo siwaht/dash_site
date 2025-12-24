@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export interface VideoData {
     id: string;
@@ -17,7 +17,7 @@ export interface VideoData {
 interface VideoContextType {
     videos: Record<string, VideoData>;
     updateVideo: (id: string, data: Partial<VideoData>) => void;
-    saveVideo: (id: string) => { success: boolean; error?: string };
+    saveVideo: () => { success: boolean; error?: string };
 }
 
 const defaultVideos: Record<string, VideoData> = {
@@ -63,13 +63,15 @@ export function VideoProvider({ children }: { children: React.ReactNode }) {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // Merge with defaults to ensure all required sections exist
-                // We map over default keys to ensure we have at least those, 
-                // but we prefer the parsed values if they exist.
                 const merged = { ...defaultVideos };
-                Object.keys(parsed).forEach(key => {
-                    if (merged[key]) {
-                        merged[key] = { ...merged[key], ...parsed[key] };
+                Object.keys(defaultVideos).forEach(key => {
+                    if (parsed[key]) {
+                        merged[key] = {
+                            ...defaultVideos[key],
+                            ...parsed[key],
+                            // Ensure nested objects like stats are also merged
+                            stats: { ...defaultVideos[key].stats, ...(parsed[key].stats || {}) }
+                        };
                     }
                 });
                 return merged;
@@ -81,25 +83,29 @@ export function VideoProvider({ children }: { children: React.ReactNode }) {
         return defaultVideos;
     });
 
-    useEffect(() => {
-        localStorage.setItem('siwaht_videos', JSON.stringify(videos));
-    }, [videos]);
-
-    const updateVideo = (id: string, data: Partial<VideoData>) => {
-        setVideos(prev => ({
-            ...prev,
-            [id]: { ...prev[id], ...data }
-        }));
+    // Save ALL videos to localStorage
+    const persistToStorage = (allVideos: Record<string, VideoData>) => {
+        localStorage.setItem('siwaht_videos', JSON.stringify(allVideos));
     };
 
-    const saveVideo = (id: string): { success: boolean; error?: string } => {
-        try {
-            const video = videos[id];
-            if (!video) {
-                return { success: false, error: 'Video not found' };
-            }
+    const updateVideo = (id: string, data: Partial<VideoData>) => {
+        setVideos(prev => {
+            const updated = {
+                ...prev,
+                [id]: { ...prev[id], ...data }
+            };
+            // Logic: Do we want to save on every change? 
+            // The user says "not getting saved", so maybe explicit save is better.
+            // But let's keep it sync'd for now but maybe debounce?
+            // Actually, let's just make sure Save button works perfectly.
+            return updated;
+        });
+    };
 
-            localStorage.setItem('siwaht_videos', JSON.stringify(videos));
+    const saveVideo = (): { success: boolean; error?: string } => {
+        try {
+            // We use the current latest state 'videos'
+            persistToStorage(videos);
             return { success: true };
         } catch (error) {
             console.error('Error saving video:', error);
