@@ -1,50 +1,60 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useVideos } from '../contexts/VideoContext';
 import { Save, LayoutDashboard, ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { getVideoPlayerConfig } from '../utils/videoUtils';
 
 export default function Admin() {
-    const { videos, updateVideo, saveVideo } = useVideos();
+    const { videos, updateAndSaveVideo } = useVideos();
     const [activeTab, setActiveTab] = useState<string>(Object.keys(videos)[0]);
-    const [currentUrl, setCurrentUrl] = useState(videos[activeTab].videoUrl);
+    const [currentUrl, setCurrentUrl] = useState(videos[activeTab]?.videoUrl || '');
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Update local state when active tab changes
-    const handleTabChange = (id: string) => {
+    const handleTabChange = useCallback((id: string) => {
         setActiveTab(id);
-        setCurrentUrl(videos[id].videoUrl);
-    };
+        setCurrentUrl(videos[id]?.videoUrl || '');
+        setSaveError(null);
+        setSaveSuccess(false);
+    }, [videos]);
 
-    const handleSave = () => {
+    const handleSave = useCallback(() => {
+        if (!currentUrl.trim()) {
+            setSaveError('Please enter a valid video URL');
+            return;
+        }
+
         setSaving(true);
         setSaveError(null);
         setSaveSuccess(false);
 
-        // 1. First update the context state
-        updateVideo(activeTab, { videoUrl: currentUrl });
+        // Use the combined update and save function - fixes the stale state bug
+        const result = updateAndSaveVideo(activeTab, { videoUrl: currentUrl.trim() });
 
-        // 2. Then trigger the actual save to localStorage
-        // We use a timeout to ensure context state has likely updated (though not strictly necessary as saveVideo uses live videos state)
-        setTimeout(() => {
-            const result = saveVideo();
+        if (result.success) {
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } else {
+            setSaveError(result.error || 'Failed to save video');
+            setTimeout(() => setSaveError(null), 5000);
+        }
+        setSaving(false);
+    }, [activeTab, currentUrl, updateAndSaveVideo]);
 
-            if (result.success) {
-                setSaveSuccess(true);
-                setTimeout(() => setSaveSuccess(false), 3000);
-            } else {
-                setSaveError(result.error || 'Failed to save video');
-                setTimeout(() => setSaveError(null), 5000);
-            }
-            setSaving(false);
-        }, 100);
-    };
-
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         localStorage.removeItem('siwaht_admin_session');
         window.location.href = '/';
-    };
+    }, []);
+
+    const activeVideo = videos[activeTab];
+    if (!activeVideo) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+                <p>No videos available</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-950 text-white pt-24 pb-12">
@@ -92,7 +102,7 @@ export default function Admin() {
                         <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 md:p-8">
                             <div className="flex justify-between items-start mb-8">
                                 <div>
-                                    <h2 className="text-2xl font-bold mb-2">{videos[activeTab].title}</h2>
+                                    <h2 className="text-2xl font-bold mb-2">{activeVideo.title}</h2>
                                     <p className="text-slate-400 text-sm">Update the video content for this section.</p>
                                 </div>
                                 <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
@@ -104,10 +114,10 @@ export default function Admin() {
                                 {/* Video Preview */}
                                 <div className="aspect-video rounded-xl overflow-hidden bg-slate-950 border border-white/10 relative group">
                                     {(() => {
-                                        const playerConfig = getVideoPlayerConfig(videos[activeTab].videoUrl);
+                                        const playerConfig = getVideoPlayerConfig(activeVideo.videoUrl);
                                         return playerConfig.type === 'embed' ? (
                                             <iframe
-                                                key={videos[activeTab].videoUrl}
+                                                key={activeVideo.videoUrl}
                                                 src={playerConfig.url}
                                                 className="w-full h-full"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
@@ -118,7 +128,7 @@ export default function Admin() {
                                             />
                                         ) : (
                                             <video
-                                                key={videos[activeTab].videoUrl}
+                                                key={activeVideo.videoUrl}
                                                 src={playerConfig.url}
                                                 className="w-full h-full object-cover"
                                                 controls
