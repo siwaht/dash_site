@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Check, Clock, Zap, Star } from 'lucide-react';
 import { useVideos } from '../contexts/VideoContext';
 import { getVideoPlayerConfig } from '../utils/videoUtils';
@@ -29,6 +29,37 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
             setIsPlaying(!isPlaying);
         }
     };
+
+    useEffect(() => {
+        const videoElement = videoRef.current;
+        if (!videoElement || isEmbed) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        videoElement.play().catch(() => {
+                            // Autoplay might be blocked, that's okay
+                            setIsPlaying(false);
+                        });
+                        setIsPlaying(true);
+                    } else {
+                        videoElement.pause();
+                        setIsPlaying(false);
+                    }
+                });
+            },
+            {
+                threshold: 0.5, // 50% of the video must be visible
+            }
+        );
+
+        observer.observe(videoElement);
+
+        return () => {
+            observer.unobserve(videoElement);
+        };
+    }, [isEmbed]);
 
     return (
         <section id={sectionId} className="py-24 relative overflow-hidden">

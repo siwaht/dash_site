@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Lenis from 'lenis';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -39,6 +40,21 @@ function App() {
     localStorage.setItem('siwaht_admin_session', 'true');
     setIsAuthenticated(true);
   };
+
+  useEffect(() => {
+    const lenis = new Lenis();
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
 
   if (isAdminRoute) {
     return (
