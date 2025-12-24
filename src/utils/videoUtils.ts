@@ -12,9 +12,22 @@ export function getVideoPlayerConfig(url: string): VideoPlayerConfig {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
 
-    if (hostname.includes('gumlet.tv') || hostname.includes('gumlet.io')) {
+    if (hostname.includes('gumlet.tv') || hostname.includes('gumlet.io') || hostname.includes('play.gumlet')) {
       const pathParts = urlObj.pathname.split('/').filter(Boolean);
-      const videoId = pathParts[pathParts.length - 1];
+      // Handle URLs like /watch/694c0f24b122cbf1763ce88c/ or /embed/694c0f24b122cbf1763ce88c
+      let videoId = '';
+      const watchIndex = pathParts.indexOf('watch');
+      const embedIndex = pathParts.indexOf('embed');
+      
+      if (watchIndex !== -1 && pathParts[watchIndex + 1]) {
+        videoId = pathParts[watchIndex + 1];
+      } else if (embedIndex !== -1 && pathParts[embedIndex + 1]) {
+        videoId = pathParts[embedIndex + 1];
+      } else {
+        // Fallback: get last non-empty segment
+        videoId = pathParts[pathParts.length - 1];
+      }
+      
       if (videoId) {
         return {
           type: 'embed',
