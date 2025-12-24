@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Check, Clock, Zap, Star } from 'lucide-react';
+import { Play, Pause, Check, Clock, Zap, Star, Loader2 } from 'lucide-react';
 import { useVideos } from '../contexts/VideoContext';
 import { getVideoPlayerConfig } from '../utils/videoUtils';
 
@@ -11,6 +11,8 @@ interface VideoFeatureSectionProps {
 export default function VideoFeatureSection({ sectionId, alignment = 'left' }: VideoFeatureSectionProps) {
     const { videos } = useVideos();
     const data = videos[sectionId];
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isInView, setIsInView] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(true);
 
@@ -31,33 +33,38 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
     };
 
     useEffect(() => {
-        const videoElement = videoRef.current;
-        if (!videoElement || isEmbed) return;
+        const containerElement = containerRef.current;
+        if (!containerElement) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        videoElement.play().catch(() => {
-                            // Autoplay might be blocked, that's okay
+                    const isVisible = entry.isIntersecting;
+                    setIsInView(isVisible);
+
+                    // Handle internal video element
+                    if (!isEmbed && videoRef.current) {
+                        if (isVisible) {
+                            videoRef.current.play().catch(() => {
+                                setIsPlaying(false);
+                            });
+                            setIsPlaying(true);
+                        } else {
+                            videoRef.current.pause();
                             setIsPlaying(false);
-                        });
-                        setIsPlaying(true);
-                    } else {
-                        videoElement.pause();
-                        setIsPlaying(false);
+                        }
                     }
                 });
             },
             {
-                threshold: 0.5, // 50% of the video must be visible
+                threshold: 0.5, // 50% of the container must be visible
             }
         );
 
-        observer.observe(videoElement);
+        observer.observe(containerElement);
 
         return () => {
-            observer.unobserve(videoElement);
+            observer.unobserve(containerElement);
         };
     }, [isEmbed]);
 
@@ -71,17 +78,23 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                         <div className="relative group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                             <div className="relative bg-slate-900 rounded-2xl p-2 border border-white/10 shadow-2xl">
-                                <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950">
+                                <div ref={containerRef} className="relative aspect-video rounded-xl overflow-hidden bg-slate-950">
                                     {isEmbed ? (
-                                        <iframe
-                                            src={playerConfig.url}
-                                            className="w-full h-full"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                                            allowFullScreen
-                                            frameBorder="0"
-                                            loading="lazy"
-                                            referrerPolicy="no-referrer-when-downgrade"
-                                        />
+                                        isInView ? (
+                                            <iframe
+                                                src={playerConfig.url}
+                                                className="w-full h-full"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                                allowFullScreen
+                                                frameBorder="0"
+                                                loading="lazy"
+                                                referrerPolicy="no-referrer-when-downgrade"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-slate-950">
+                                                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                                            </div>
+                                        )
                                     ) : (
                                         <>
                                             <video
