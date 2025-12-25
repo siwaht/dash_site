@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useRef } from 'react';
 import { CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
@@ -9,6 +9,8 @@ export default function DemoForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const sectionRef = useScrollReveal({ threshold: 0.1, staggerDelay: 100 });
+  const formRef = useRef<HTMLFormElement>(null);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -38,7 +40,7 @@ export default function DemoForm() {
       }
 
       setSubmitStatus('success');
-      e.currentTarget.reset();
+      formRef.current?.reset();
     } catch (error) {
       console.error('Error submitting demo request:', error);
       setSubmitStatus('error');
@@ -99,7 +101,7 @@ export default function DemoForm() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
               <div className="scroll-reveal flex flex-col group">
                 <label
                   htmlFor="name"
