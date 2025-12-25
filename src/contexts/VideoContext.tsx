@@ -21,13 +21,14 @@ interface VideoContextType {
 }
 
 const STORAGE_KEY = 'siwaht_videos';
+const STORAGE_VERSION = 'v2'; // Bump this to force refresh of defaults
 
 const defaultVideos: Record<string, VideoData> = {
     'chat-agents': {
         id: 'chat-agents',
         title: 'Chat Agents',
         description: 'Intelligent WhatsApp chatbots that seamlessly interact with humans, providing instant support and engagement.',
-        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-virtual-reality-game-display-1167-large.mp4',
+        videoUrl: 'https://gumlet.tv/watch/694c0aa2b122cbf1763c9e71',
         stats: { duration: '24/7', quality: 'Auto', delivery: 'Instant' },
         features: ['Natural Language Processing', 'Multi-language Support', 'Automated Workflows', 'CRM Integration']
     },
@@ -35,7 +36,7 @@ const defaultVideos: Record<string, VideoData> = {
         id: 'ai-avatars',
         title: 'AI Avatars',
         description: 'Lifelike AI avatars that can present your content with human-like expressions and gestures.',
-        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-wearing-a-vr-headset-interacting-with-data-43687-large.mp4',
+        videoUrl: 'https://gumlet.tv/watch/694c0f24b122cbf1763ce88c',
         stats: { duration: 'Custom', quality: '4K', delivery: '24 Hours' },
         features: ['Photorealistic Rendering', 'Customizable Appearance', 'Lip-sync Technology', 'Brand Consistency']
     },
@@ -59,6 +60,14 @@ const defaultVideos: Record<string, VideoData> = {
 
 const loadVideosFromStorage = (): Record<string, VideoData> => {
     try {
+        // Check version - if outdated, clear and use new defaults
+        const version = localStorage.getItem(`${STORAGE_KEY}_version`);
+        if (version !== STORAGE_VERSION) {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.setItem(`${STORAGE_KEY}_version`, STORAGE_VERSION);
+            return defaultVideos;
+        }
+
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             const parsed = JSON.parse(saved);
