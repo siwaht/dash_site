@@ -21,7 +21,7 @@ interface VideoContextType {
 }
 
 const STORAGE_KEY = 'siwaht_videos';
-const STORAGE_VERSION = 'v3'; // Bump this to force refresh of defaults
+const STORAGE_VERSION = 'v4'; // Bump this to force refresh of defaults
 
 const defaultVideos: Record<string, VideoData> = {
     'chat-agents': {
@@ -36,7 +36,7 @@ const defaultVideos: Record<string, VideoData> = {
         id: 'ai-avatars',
         title: 'AI Avatars',
         description: 'Lifelike AI avatars that can present your content with human-like expressions and gestures.',
-        videoUrl: 'https://gumlet.tv/watch/694c0f24b122cbf1763ce88c',
+        videoUrl: 'https://gumlet.tv/watch/694bff80e086c47a8221f5a6',
         stats: { duration: 'Custom', quality: '4K', delivery: '24 Hours' },
         features: ['Photorealistic Rendering', 'Customizable Appearance', 'Lip-sync Technology', 'Brand Consistency']
     },
