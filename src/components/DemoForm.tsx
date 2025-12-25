@@ -1,7 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+
+const WEBHOOK_URL = 'https://hook.eu2.make.com/w1c614umdkfa60gqx2yftl4f4tfudkqt';
 
 export default function DemoForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,18 +21,21 @@ export default function DemoForm() {
       email: formData.get('email') as string,
       company: formData.get('company') as string,
       message: formData.get('message') as string,
+      submittedAt: new Date().toISOString(),
     };
 
     try {
-      if (!supabase) {
-        throw new Error('Database connection not available');
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
       }
-
-      const { error } = await supabase
-        .from('consultation_requests')
-        .insert([data]);
-
-      if (error) throw error;
 
       setSubmitStatus('success');
       e.currentTarget.reset();
