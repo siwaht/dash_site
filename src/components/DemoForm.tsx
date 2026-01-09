@@ -1,17 +1,19 @@
-import { FormEvent, useState, useRef } from 'react';
-import { CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { FormEvent, useState, useRef, useCallback } from 'react';
+import { CheckCircle, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 const WEBHOOK_URL = 'https://hook.eu2.make.com/w1c614umdkfa60gqx2yftl4f4tfudkqt';
 
+type SubmitStatus = 'idle' | 'success' | 'error';
+
 export default function DemoForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const sectionRef = useScrollReveal({ threshold: 0.1, staggerDelay: 100 });
   const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -19,25 +21,21 @@ export default function DemoForm() {
 
     const formData = new FormData(e.currentTarget);
     const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      company: formData.get('company') as string,
-      message: formData.get('message') as string,
+      name: formData.get('name'),
+      email: formData.get('email'),
+      company: formData.get('company'),
+      message: formData.get('message'),
       submittedAt: new Date().toISOString(),
     };
 
     try {
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit form');
-      }
+      if (!response.ok) throw new Error('Failed to submit form');
 
       setSubmitStatus('success');
       formRef.current?.reset();
@@ -48,7 +46,7 @@ export default function DemoForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, []);
 
   return (
     <section ref={sectionRef} id="demo-form" aria-labelledby="demo-form-heading" className="py-12 sm:py-16 md:py-20 lg:py-24 bg-light-primary dark:bg-dark-primary transition-colors relative overflow-hidden">
@@ -187,10 +185,7 @@ export default function DemoForm() {
                   <span className="relative z-10">
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         Submitting...
                       </span>
                     ) : (

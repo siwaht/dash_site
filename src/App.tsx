@@ -1,23 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Lenis from 'lenis';
 import Header from './components/Header';
 import Hero from './components/Hero';
-import Features from './components/Features';
-import HowItWorks from './components/HowItWorks';
-import UseCases from './components/UseCases';
-import DemoForm from './components/DemoForm';
 import Footer from './components/Footer';
-import PrivacyPolicy from './components/PrivacyPolicy';
 import ErrorBoundary from './components/ErrorBoundary';
 import VideoFeatureSection from './components/VideoFeatureSection';
-import Admin from './pages/Admin';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { VideoProvider } from './contexts/VideoContext';
-import AGUISection from './components/AGUISection';
-import WorkflowSection from './components/WorkflowSection';
-import FAQ from './components/FAQ';
 
-import Login from './pages/Login';
+// Lazy load components for better performance
+const Features = lazy(() => import('./components/Features'));
+const HowItWorks = lazy(() => import('./components/HowItWorks'));
+const UseCases = lazy(() => import('./components/UseCases'));
+const DemoForm = lazy(() => import('./components/DemoForm'));
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
+const AGUISection = lazy(() => import('./components/AGUISection'));
+const WorkflowSection = lazy(() => import('./components/WorkflowSection'));
+const FAQ = lazy(() => import('./components/FAQ'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Login = lazy(() => import('./pages/Login'));
+
+// Loading fallback component
+const SectionLoader = () => (
+  <div className="py-24 flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+// Video section IDs for cleaner mapping
+const VIDEO_SECTIONS = [
+  { id: 'chat-agents', alignment: 'left' as const },
+  { id: 'ai-avatars', alignment: 'right' as const },
+  { id: 'video-ads', alignment: 'left' as const },
+  { id: 'voice-agents', alignment: 'right' as const },
+] as const;
 
 function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
@@ -25,33 +41,33 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for admin route
     if (window.location.pathname === '/admin') {
       setIsAdminRoute(true);
-      // Check for existing session
-      const session = localStorage.getItem('siwaht_admin_session');
-      if (session === 'true') {
-        setIsAuthenticated(true);
-      }
+      setIsAuthenticated(localStorage.getItem('siwaht_admin_session') === 'true');
     }
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     localStorage.setItem('siwaht_admin_session', 'true');
     setIsAuthenticated(true);
-  };
+  }, []);
+
+  const openPrivacy = useCallback(() => setIsPrivacyOpen(true), []);
+  const closePrivacy = useCallback(() => setIsPrivacyOpen(false), []);
 
   useEffect(() => {
     const lenis = new Lenis();
+    let rafId: number;
 
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     return () => {
+      cancelAnimationFrame(rafId);
       lenis.destroy();
     };
   }, []);
@@ -60,41 +76,41 @@ function App() {
     <VideoProvider>
       <ThemeProvider>
         <ErrorBoundary>
-          {isAdminRoute ? (
-            isAuthenticated ? (
-              <Admin />
+          <Suspense fallback={<SectionLoader />}>
+            {isAdminRoute ? (
+              isAuthenticated ? <Admin /> : <Login onLogin={handleLogin} />
             ) : (
-              <Login onLogin={handleLogin} />
-            )
-          ) : (
-            <div className="min-h-screen bg-slate-950 transition-colors duration-300">
-              <Header />
-              <main>
-                <Hero />
+              <div className="min-h-screen bg-slate-950 transition-colors duration-300">
+                <Header />
+                <main>
+                  <Hero />
 
-                {/* New Video Sections */}
-                <div id="services" className="space-y-0">
-                  <VideoFeatureSection sectionId="chat-agents" alignment="left" />
-                  <VideoFeatureSection sectionId="ai-avatars" alignment="right" />
-                  <VideoFeatureSection sectionId="video-ads" alignment="left" />
-                  <VideoFeatureSection sectionId="voice-agents" alignment="right" />
-                </div>
+                  <div id="services" className="space-y-0">
+                    {VIDEO_SECTIONS.map(({ id, alignment }) => (
+                      <VideoFeatureSection key={id} sectionId={id} alignment={alignment} />
+                    ))}
+                  </div>
 
-                <HowItWorks />
-                <AGUISection />
-                <WorkflowSection />
-                <Features />
-                <UseCases />
-                <FAQ />
-                <DemoForm />
-              </main>
-              <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
+                  <Suspense fallback={<SectionLoader />}>
+                    <HowItWorks />
+                    <AGUISection />
+                    <WorkflowSection />
+                    <Features />
+                    <UseCases />
+                    <FAQ />
+                    <DemoForm />
+                  </Suspense>
+                </main>
+                <Footer onOpenPrivacy={openPrivacy} />
 
-              {isPrivacyOpen && (
-                <PrivacyPolicy onClose={() => setIsPrivacyOpen(false)} />
-              )}
-            </div>
-          )}
+                {isPrivacyOpen && (
+                  <Suspense fallback={null}>
+                    <PrivacyPolicy onClose={closePrivacy} />
+                  </Suspense>
+                )}
+              </div>
+            )}
+          </Suspense>
         </ErrorBoundary>
       </ThemeProvider>
     </VideoProvider>
