@@ -39,7 +39,7 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
                 {[
                   { label: 'Chat Agents', href: '#chat-agents' },
                   { label: 'AI Avatars', href: '#ai-avatars' },
-                  { label: 'Video Ads', href: '#video-ads' },
+                  { label: 'AI Generated Videos', href: '#video-ads' },
                   { label: 'Voice Agents', href: '#voice-agents' }
                 ].map((item) => (
                   <li key={item.label}>

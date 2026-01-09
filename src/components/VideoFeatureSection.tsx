@@ -170,17 +170,17 @@ export default function VideoFeatureSection({ sectionId, alignment = 'left' }: V
                                         <Check className="w-5 h-5 text-indigo-400" />
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-semibold mb-1">{feature}</h4>
-                                        <p className="text-sm text-slate-400">Optimized for maximum engagement and conversion.</p>
+                                        <h4 className="text-white font-semibold mb-1">{feature.title}</h4>
+                                        <p className="text-sm text-slate-400">{feature.description}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <button className="group flex items-center gap-2 text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">
+                        <a href="#demo-form" className="group flex items-center gap-2 text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">
                             Learn more about {data.title}
                             <Zap className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

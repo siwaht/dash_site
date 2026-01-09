@@ -42,8 +42,8 @@ export default function HowItWorks() {
     },
     {
       icon: Video,
-      title: 'AI Generated Video Ads',
-      description: 'Rapid creation of high-quality, personalized video advertisements using AI. Perfect for A/B testing, scaled marketing campaigns, and achieving fast time-to-market for new products.',
+      title: 'AI Generated Videos',
+      description: 'Professional video content created by AI in hours, not weeks. From marketing videos to explainers, scaled to your needs with rapid turnaround.',
       gradient: 'from-brand-emerald via-brand-teal to-brand-cyan',
       category: 'Marketing',
     },
