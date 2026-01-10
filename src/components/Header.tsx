@@ -32,7 +32,6 @@ export default function Header() {
             className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight hover:opacity-90 transition-opacity flex items-center gap-2"
             aria-label="DashboardX home"
           >
-
             DashboardX
           </a>
 
@@ -90,46 +89,58 @@ export default function Header() {
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors relative z-[60]"
               aria-label="Toggle mobile menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </nav>
+      </div>
 
-
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 p-4 bg-slate-950/95 backdrop-blur-xl border-b border-white/5 animate-fadeInUp">
-            <ul className="flex flex-col gap-2">
-              {[
-                { label: 'Services', href: '#services' },
-                { label: 'Features', href: '#features' },
-                { label: 'Solutions', href: '#use-cases' }
-              ].map((item) => (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className="block py-3 px-4 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-              <li className="mt-2 pt-2 border-t border-white/5">
+      {/* Mobile menu - moved outside container for proper z-index stacking */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-x-0 top-[72px] z-[60] p-4 bg-slate-950/98 backdrop-blur-xl border-b border-white/5 animate-fadeInUp"
+          style={{ maxHeight: 'calc(100vh - 72px)', overflowY: 'auto' }}
+        >
+          <ul className="flex flex-col gap-2">
+            {[
+              { label: 'Services', href: '#services' },
+              { label: 'Features', href: '#features' },
+              { label: 'Solutions', href: '#use-cases' }
+            ].map((item) => (
+              <li key={item.label}>
                 <a
-                  href="#demo-form"
-                  className="block text-center bg-white text-slate-950 px-4 py-3 rounded-lg font-bold hover:bg-slate-200 transition-colors"
+                  href={item.href}
+                  className="block py-3 px-4 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Request Demo
+                  {item.label}
                 </a>
               </li>
-            </ul>
-          </div>
-        )}
-      </div>
+            ))}
+            <li className="mt-2 pt-2 border-t border-white/5">
+              <a
+                href="#demo-form"
+                className="block text-center bg-white text-slate-950 px-4 py-3 rounded-lg font-bold hover:bg-slate-200 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Request Demo
+              </a>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {/* Overlay to close menu when clicking outside */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 top-[72px] z-[55] bg-black/50"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
     </header>
   );
 }
