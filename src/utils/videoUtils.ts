@@ -29,9 +29,10 @@ export function getVideoPlayerConfig(url: string): VideoPlayerConfig {
       }
       
       if (videoId) {
+        // Add autoplay, loop, muted, and preload params for continuous playback like siwaht.com
         return {
           type: 'embed',
-          url: `https://play.gumlet.io/embed/${videoId}`
+          url: `https://play.gumlet.io/embed/${videoId}?autoplay=true&loop=true&muted=true&preload=true`
         };
       }
     }
@@ -43,17 +44,19 @@ export function getVideoPlayerConfig(url: string): VideoPlayerConfig {
       } else {
         videoId = urlObj.pathname.slice(1);
       }
+      // Add autoplay, loop, mute params for continuous playback
       return {
         type: 'embed',
-        url: `https://www.youtube.com/embed/${videoId}`
+        url: `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&mute=1&playlist=${videoId}`
       };
     }
 
     if (hostname.includes('vimeo.com')) {
       const videoId = urlObj.pathname.split('/').filter(Boolean).pop();
+      // Add autoplay, loop, muted params for continuous playback
       return {
         type: 'embed',
-        url: `https://player.vimeo.com/video/${videoId}`
+        url: `https://player.vimeo.com/video/${videoId}?autoplay=1&loop=1&muted=1&background=1`
       };
     }
 
