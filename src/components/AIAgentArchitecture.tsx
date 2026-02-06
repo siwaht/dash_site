@@ -1,4 +1,4 @@
-import { Bot, Database, MessageSquare, Brain, Video, Sparkles } from 'lucide-react';
+import { Bot, Database, MessageSquare, Brain, Cpu, Sparkles } from 'lucide-react';
 import { useEffect, useState, useRef, useCallback, ElementType } from 'react';
 
 interface WorkflowNode {
@@ -9,6 +9,7 @@ interface WorkflowNode {
   desktop: { x: number; y: number };
   mobile: { x: number; y: number };
   type: 'primary' | 'agent' | 'service';
+  color: string;
 }
 
 interface Connection {
@@ -16,6 +17,102 @@ interface Connection {
   to: string;
   style: 'solid' | 'dashed';
 }
+
+type NodeStatus = 'idle' | 'active' | 'completed';
+
+const NODES: WorkflowNode[] = [
+  {
+    id: 'trigger',
+    icon: MessageSquare,
+    label: 'Input',
+    sublabel: 'User Query',
+    desktop: { x: 12, y: 35 },
+    mobile: { x: 50, y: 8 },
+    type: 'primary',
+    color: '#818cf8', // indigo
+  },
+  {
+    id: 'agent',
+    icon: Bot,
+    label: 'AI Agent',
+    sublabel: 'Orchestrator',
+    desktop: { x: 50, y: 32 },
+    mobile: { x: 50, y: 35 },
+    type: 'agent',
+    color: '#06b6d4', // cyan
+  },
+  {
+    id: 'output',
+    icon: Sparkles,
+    label: 'Output',
+    sublabel: 'Response',
+    desktop: { x: 88, y: 35 },
+    mobile: { x: 50, y: 92 },
+    type: 'primary',
+    color: '#a78bfa', // violet
+  },
+  {
+    id: 'llm',
+    icon: Brain,
+    label: 'LLM',
+    sublabel: 'GPT-4',
+    desktop: { x: 25, y: 75 },
+    mobile: { x: 20, y: 62 },
+    type: 'service',
+    color: '#f472b6', // pink
+  },
+  {
+    id: 'memory',
+    icon: Database,
+    label: 'Memory',
+    sublabel: 'Context',
+    desktop: { x: 42, y: 82 },
+    mobile: { x: 80, y: 62 },
+    type: 'service',
+    color: '#34d399', // emerald
+  },
+  {
+    id: 'vector',
+    icon: Database,
+    label: 'Vector DB',
+    sublabel: 'RAG',
+    desktop: { x: 58, y: 82 },
+    mobile: { x: 20, y: 78 },
+    type: 'service',
+    color: '#38bdf8', // sky
+  },
+  {
+    id: 'embeddings',
+    icon: Cpu,
+    label: 'Embeddings',
+    sublabel: 'Encoder',
+    desktop: { x: 75, y: 75 },
+    mobile: { x: 80, y: 78 },
+    type: 'service',
+    color: '#fbbf24', // amber
+  },
+];
+
+const CONNECTIONS: Connection[] = [
+  { from: 'trigger', to: 'agent', style: 'solid' },
+  { from: 'agent', to: 'output', style: 'solid' },
+  { from: 'agent', to: 'llm', style: 'dashed' },
+  { from: 'agent', to: 'memory', style: 'dashed' },
+  { from: 'agent', to: 'vector', style: 'dashed' },
+  { from: 'agent', to: 'embeddings', style: 'dashed' },
+];
+
+const STAGES = [
+  { time: 300, activeNode: 'trigger', label: 'Receiving query...', completed: [] as string[], activeConns: [] as string[], completedConns: [] as string[] },
+  { time: 1200, activeNode: 'trigger', label: 'Receiving query...', completed: ['trigger'], activeConns: ['trigger-agent'], completedConns: [] as string[] },
+  { time: 2000, activeNode: 'agent', label: 'Agent reasoning...', completed: ['trigger'], activeConns: [], completedConns: ['trigger-agent'] },
+  { time: 3000, activeNode: 'agent', label: 'Querying knowledge...', completed: ['trigger'], activeConns: ['agent-llm', 'agent-memory'], completedConns: ['trigger-agent'] },
+  { time: 4000, activeNode: 'agent', label: 'Processing context...', completed: ['trigger', 'llm', 'memory'], activeConns: ['agent-vector', 'agent-embeddings'], completedConns: ['trigger-agent', 'agent-llm', 'agent-memory'] },
+  { time: 5200, activeNode: 'agent', label: 'Synthesizing response...', completed: ['trigger', 'llm', 'memory', 'vector', 'embeddings'], activeConns: [], completedConns: ['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings'] },
+  { time: 6200, activeNode: 'agent', label: 'Generating output...', completed: ['trigger', 'llm', 'memory', 'vector', 'embeddings'], activeConns: ['agent-output'], completedConns: ['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings'] },
+  { time: 7200, activeNode: 'output', label: 'Response delivered', completed: ['trigger', 'llm', 'memory', 'vector', 'embeddings', 'agent', 'output'], activeConns: [], completedConns: ['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings', 'agent-output'] },
+  { time: 8500, activeNode: null, label: '', completed: [] as string[], activeConns: [] as string[], completedConns: [] as string[] },
+];
 
 export default function AIAgentArchitecture() {
   const [activeNode, setActiveNode] = useState<string | null>(null);
@@ -29,9 +126,7 @@ export default function AIAgentArchitecture() {
   const isAnimatingRef = useRef(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -51,121 +146,42 @@ export default function AIAgentArchitecture() {
     setCurrentStageLabel('');
   }, []);
 
-  const nodes: WorkflowNode[] = [
-    {
-      id: 'trigger',
-      icon: MessageSquare,
-      label: 'Input',
-      sublabel: 'User Query',
-      desktop: { x: 15, y: 30 },
-      mobile: { x: 50, y: 10 },
-      type: 'primary'
-    },
-    {
-      id: 'agent',
-      icon: Bot,
-      label: 'AI Agent',
-      sublabel: 'Orchestrator',
-      desktop: { x: 50, y: 30 },
-      mobile: { x: 50, y: 35 },
-      type: 'agent'
-    },
-    {
-      id: 'output',
-      icon: Sparkles,
-      label: 'Output',
-      sublabel: 'Response',
-      desktop: { x: 85, y: 30 },
-      mobile: { x: 50, y: 90 },
-      type: 'primary'
-    },
-    {
-      id: 'llm',
-      icon: Brain,
-      label: 'LLM',
-      desktop: { x: 25, y: 70 },
-      mobile: { x: 25, y: 60 },
-      type: 'service'
-    },
-    {
-      id: 'memory',
-      icon: Database,
-      label: 'Memory',
-      desktop: { x: 42, y: 80 },
-      mobile: { x: 75, y: 60 },
-      type: 'service'
-    },
-    {
-      id: 'vector',
-      icon: Database,
-      label: 'Vector Store',
-      desktop: { x: 58, y: 80 },
-      mobile: { x: 25, y: 75 },
-      type: 'service'
-    },
-    {
-      id: 'embeddings',
-      icon: Video,
-      label: 'Embeddings',
-      desktop: { x: 75, y: 70 },
-      mobile: { x: 75, y: 75 },
-      type: 'service'
-    }
-  ];
-
-  const connections: Connection[] = [
-    { from: 'trigger', to: 'agent', style: 'solid' },
-    { from: 'agent', to: 'output', style: 'solid' },
-    { from: 'agent', to: 'llm', style: 'dashed' },
-    { from: 'agent', to: 'memory', style: 'dashed' },
-    { from: 'agent', to: 'vector', style: 'dashed' },
-    { from: 'agent', to: 'embeddings', style: 'dashed' }
-  ];
-
-  const startAnimation = useCallback(() => {
+  const runAnimation = useCallback(() => {
     stopAnimation();
     resetAnimation();
 
-    const stages = [
-      { time: 200, action: () => { setActiveNode('trigger'); setCurrentStageLabel('Receiving input...'); } },
-      { time: 1000, action: () => { setCompletedNodes(['trigger']); setActiveConnections(['trigger-agent']); } },
-      { time: 1500, action: () => { setCompletedConnections(['trigger-agent']); setActiveNode('agent'); setCurrentStageLabel('Agent processing...'); } },
-      { time: 2500, action: () => { setActiveConnections(['agent-llm', 'agent-memory']); setCurrentStageLabel('Accessing LLM and memory...'); } },
-      { time: 3000, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory']); setActiveNode('llm'); setActiveNode('memory'); } },
-      { time: 4000, action: () => { setCompletedNodes(['trigger', 'llm', 'memory']); setActiveNode('agent'); setCurrentStageLabel('Retrieving knowledge...'); } },
-      { time: 4800, action: () => { setActiveConnections(['agent-vector', 'agent-embeddings']); } },
-      { time: 5300, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings']); setActiveNode('vector'); setActiveNode('embeddings'); } },
-      { time: 6300, action: () => { setCompletedNodes(['trigger', 'llm', 'memory', 'vector', 'embeddings']); setActiveNode('agent'); setCurrentStageLabel('Generating response...'); } },
-      { time: 7200, action: () => { setActiveConnections(['agent-output']); } },
-      { time: 7800, action: () => { setCompletedConnections(['trigger-agent', 'agent-llm', 'agent-memory', 'agent-vector', 'agent-embeddings', 'agent-output']); setActiveNode('output'); } },
-      { time: 8800, action: () => { setCompletedNodes(['trigger', 'llm', 'memory', 'vector', 'embeddings', 'agent', 'output']); setCurrentStageLabel('Complete!'); } },
-      { time: 9500, action: () => { setCurrentStageLabel(''); setActiveNode(null); } }
-    ];
-
-    stages.forEach(({ time, action }) => {
-      animationTimers.current.push(setTimeout(action, time));
+    STAGES.forEach(({ time, activeNode: node, label, completed, activeConns, completedConns }) => {
+      animationTimers.current.push(setTimeout(() => {
+        setActiveNode(node);
+        setCurrentStageLabel(label);
+        setCompletedNodes(completed);
+        setActiveConnections(activeConns);
+        setCompletedConnections(completedConns);
+      }, time));
     });
   }, [stopAnimation, resetAnimation]);
 
-  const startAnimationLoop = useCallback(() => {
+  const startLoop = useCallback(() => {
     if (isAnimatingRef.current) return;
     isAnimatingRef.current = true;
 
     const loop = () => {
       if (!isAnimatingRef.current) return;
-      startAnimation();
-      animationTimers.current.push(setTimeout(loop, 11000));
+      runAnimation();
+      animationTimers.current.push(setTimeout(loop, 10000));
     };
-
     loop();
-  }, [startAnimation]);
+  }, [runAnimation]);
 
   useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !isAnimatingRef.current) {
-            startAnimationLoop();
+            startLoop();
           } else if (!entry.isIntersecting && isAnimatingRef.current) {
             stopAnimation();
             resetAnimation();
@@ -175,93 +191,105 @@ export default function AIAgentArchitecture() {
       { threshold: 0.2 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
+    observer.observe(el);
     return () => {
       observer.disconnect();
       stopAnimation();
     };
-  }, [startAnimationLoop, stopAnimation, resetAnimation]);
+  }, [startLoop, stopAnimation, resetAnimation]);
 
-  const getNodeStatus = (id: string) => {
+  const getNodeStatus = useCallback((id: string): NodeStatus => {
     if (completedNodes.includes(id)) return 'completed';
     if (activeNode === id) return 'active';
     return 'idle';
-  };
+  }, [completedNodes, activeNode]);
 
-  const getConnectionStatus = (fromId: string, toId: string) => {
-    const key = `${fromId}-${toId}`;
+  const getConnStatus = useCallback((from: string, to: string): NodeStatus => {
+    const key = `${from}-${to}`;
     if (completedConnections.includes(key)) return 'completed';
     if (activeConnections.includes(key)) return 'active';
     return 'idle';
-  };
+  }, [completedConnections, activeConnections]);
 
-  const renderConnection = (conn: Connection, index: number) => {
-    const fromNode = nodes.find(n => n.id === conn.from);
-    const toNode = nodes.find(n => n.id === conn.to);
-    if (!fromNode || !toNode) return null;
+  const buildPath = useCallback((from: WorkflowNode, to: WorkflowNode): string => {
+    const s = isMobile ? from.mobile : from.desktop;
+    const e = isMobile ? to.mobile : to.desktop;
 
-    const status = getConnectionStatus(conn.from, conn.to);
-    const pathId = `path-${conn.from}-${conn.to}`;
-
-    const start = isMobile ? fromNode.mobile : fromNode.desktop;
-    const end = isMobile ? toNode.mobile : toNode.desktop;
-
-    const startX = start.x;
-    const startY = start.y;
-    const endX = end.x;
-    const endY = end.y;
-
-    let pathD: string;
-
-    // Improved path logic for cleaner curves
     if (isMobile) {
-      // Vertical flow logic
-      if (Math.abs(startX - endX) < 5) {
-        // Straight vertical line
-        pathD = `M ${startX},${startY} L ${endX},${endY}`;
-      } else {
-        // Curved line for branching
-        const midY = (startY + endY) / 2;
-        pathD = `M ${startX},${startY} C ${startX},${midY} ${endX},${midY} ${endX},${endY}`;
-      }
-    } else {
-      // Desktop flow logic
-      if (Math.abs(startY - endY) < 5) {
-        // Horizontal line
-        pathD = `M ${startX},${startY} L ${endX},${endY}`;
-      } else {
-        // Curved line to services
-        const controlY = startY + (endY - startY) * 0.6;
-        pathD = `M ${startX},${startY} C ${startX},${controlY} ${endX},${controlY} ${endX},${endY}`;
-      }
+      if (Math.abs(s.x - e.x) < 5) return `M ${s.x},${s.y} L ${e.x},${e.y}`;
+      const midY = (s.y + e.y) / 2;
+      return `M ${s.x},${s.y} C ${s.x},${midY} ${e.x},${midY} ${e.x},${e.y}`;
     }
 
-    const strokeColor = status === 'completed' ? '#10b981' : status === 'active' ? '#06b6d4' : '#334155';
-    const strokeWidth = status === 'active' ? '0.4' : '0.2';
-    const opacity = status === 'idle' ? '0.3' : '1';
+    if (Math.abs(s.y - e.y) < 5) return `M ${s.x},${s.y} L ${e.x},${e.y}`;
+    const cy = s.y + (e.y - s.y) * 0.55;
+    return `M ${s.x},${s.y} C ${s.x},${cy} ${e.x},${cy} ${e.x},${e.y}`;
+  }, [isMobile]);
+
+  const renderConnection = (conn: Connection, index: number) => {
+    const fromNode = NODES.find(n => n.id === conn.from);
+    const toNode = NODES.find(n => n.id === conn.to);
+    if (!fromNode || !toNode) return null;
+
+    const status = getConnStatus(conn.from, conn.to);
+    const pathId = `arch-path-${conn.from}-${conn.to}`;
+    const gradId = `arch-grad-${conn.from}-${conn.to}`;
+    const pathD = buildPath(fromNode, toNode);
+
+    const isActive = status === 'active';
+    const isDone = status === 'completed';
 
     return (
       <g key={index}>
+        {/* Glow layer */}
+        {(isActive || isDone) && (
+          <path
+            d={pathD}
+            fill="none"
+            stroke={isDone ? toNode.color : fromNode.color}
+            strokeWidth="1.2"
+            strokeDasharray={conn.style === 'dashed' ? '2,2' : 'none'}
+            opacity={0.15}
+            strokeLinecap="round"
+            filter="url(#arch-glow)"
+          />
+        )}
+
+        {/* Gradient definition for this connection */}
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={fromNode.color} />
+            <stop offset="100%" stopColor={toNode.color} />
+          </linearGradient>
+        </defs>
+
+        {/* Main path */}
         <path
           id={pathId}
           d={pathD}
           fill="none"
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-          strokeDasharray={conn.style === 'dashed' ? '1,1' : 'none'}
-          opacity={opacity}
+          stroke={isActive || isDone ? `url(#${gradId})` : '#1e293b'}
+          strokeWidth={isActive ? '0.5' : isDone ? '0.35' : '0.15'}
+          strokeDasharray={conn.style === 'dashed' ? '1.5,1.5' : 'none'}
+          opacity={status === 'idle' ? 0.3 : 1}
           strokeLinecap="round"
-          className="transition-all duration-500"
+          className="transition-all duration-700"
         />
-        {status === 'active' && (
-          <circle r="0.6" fill="#06b6d4" className="filter drop-shadow-[0_0_2px_rgba(6,182,212,0.8)]">
-            <animateMotion dur="1.5s" repeatCount="indefinite">
-              <mpath href={`#${pathId}`} />
-            </animateMotion>
-          </circle>
+
+        {/* Traveling particle */}
+        {isActive && (
+          <>
+            <circle r="0.8" fill={toNode.color} opacity="0.9">
+              <animateMotion dur="1.2s" repeatCount="indefinite">
+                <mpath href={`#${pathId}`} />
+              </animateMotion>
+            </circle>
+            <circle r="1.8" fill={toNode.color} opacity="0.15">
+              <animateMotion dur="1.2s" repeatCount="indefinite">
+                <mpath href={`#${pathId}`} />
+              </animateMotion>
+            </circle>
+          </>
         )}
       </g>
     );
@@ -272,59 +300,99 @@ export default function AIAgentArchitecture() {
     const isAgent = node.type === 'agent';
     const isService = node.type === 'service';
     const pos = isMobile ? node.mobile : node.desktop;
+    const isActive = status === 'active';
+    const isDone = status === 'completed';
+
+    const sizeClass = isAgent
+      ? 'w-[72px] h-[72px] sm:w-[88px] sm:h-[88px]'
+      : isService
+        ? 'w-[48px] h-[48px] sm:w-[56px] sm:h-[56px]'
+        : 'w-[56px] h-[56px] sm:w-[64px] sm:h-[64px]';
+
+    const iconSize = isAgent
+      ? 'w-8 h-8 sm:w-9 sm:h-9'
+      : 'w-5 h-5 sm:w-6 sm:h-6';
 
     return (
       <div
         key={node.id}
-        className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-in-out"
-        style={{
-          left: `${pos.x}%`,
-          top: `${pos.y}%`,
-          zIndex: isAgent ? 20 : 10
-        }}
+        className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out"
+        style={{ left: `${pos.x}%`, top: `${pos.y}%`, zIndex: isAgent ? 20 : 10 }}
       >
-        <div className="flex flex-col items-center gap-2 group">
-          <div
-            className={`relative flex items-center justify-center transition-all duration-500 backdrop-blur-md
-              ${isAgent
-                ? 'w-20 h-20 sm:w-24 sm:h-24 rounded-2xl'
-                : isService
-                  ? 'w-12 h-12 sm:w-14 sm:h-14 rounded-xl'
-                  : 'w-16 h-12 sm:w-32 sm:h-14 rounded-lg'
-              }
-              ${status === 'active'
-                ? 'bg-cyan-950/80 border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-110'
-                : status === 'completed'
-                  ? 'bg-emerald-950/80 border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                  : 'bg-slate-900/60 border border-slate-700/50 hover:border-slate-600'
-              }
-            `}
-          >
-            {/* Inner Glow for Agent */}
-            {isAgent && status === 'active' && (
-              <div className="absolute inset-0 rounded-2xl bg-cyan-400/10 animate-pulse"></div>
+        <div className="flex flex-col items-center gap-2.5">
+          {/* Node container */}
+          <div className="relative">
+            {/* Outer ring pulse for active */}
+            {isActive && (
+              <div
+                className="absolute -inset-2 rounded-2xl animate-ping opacity-20"
+                style={{ backgroundColor: node.color }}
+              />
             )}
 
-            <div className={`transition-colors duration-300 ${status === 'active' ? 'text-cyan-400' : status === 'completed' ? 'text-emerald-400' : 'text-slate-400'
-              }`}>
-              <node.icon className={`${isAgent ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-5 h-5 sm:w-6 sm:h-6'}`} strokeWidth={1.5} />
+            {/* Outer ring for active/completed */}
+            {(isActive || isDone) && (
+              <div
+                className="absolute -inset-1 rounded-2xl opacity-30 transition-all duration-500"
+                style={{
+                  background: `linear-gradient(135deg, ${node.color}40, transparent, ${node.color}20)`,
+                  border: `1px solid ${node.color}50`,
+                }}
+              />
+            )}
+
+            {/* Main node */}
+            <div
+              className={`relative ${sizeClass} rounded-xl flex items-center justify-center transition-all duration-500 backdrop-blur-sm ${
+                isActive
+                  ? 'scale-110'
+                  : isDone
+                    ? 'scale-100'
+                    : 'scale-100'
+              }`}
+              style={{
+                background: isActive
+                  ? `linear-gradient(135deg, ${node.color}25, ${node.color}10)`
+                  : isDone
+                    ? `linear-gradient(135deg, ${node.color}15, ${node.color}08)`
+                    : 'rgba(15, 23, 42, 0.6)',
+                border: `1px solid ${
+                  isActive ? `${node.color}80` : isDone ? `${node.color}40` : 'rgba(51, 65, 85, 0.4)'
+                }`,
+                boxShadow: isActive
+                  ? `0 0 30px ${node.color}20, inset 0 1px 0 ${node.color}15`
+                  : isDone
+                    ? `0 0 15px ${node.color}10`
+                    : 'none',
+              }}
+            >
+              <div
+                className="transition-colors duration-500"
+                style={{ color: isActive || isDone ? node.color : '#64748b' }}
+              >
+                <node.icon className={iconSize} strokeWidth={1.5} />
+              </div>
             </div>
 
-            {/* Status Indicator Dot */}
-            {status === 'active' && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full border-2 border-slate-900 animate-ping"></div>
+            {/* Status dot */}
+            {isActive && (
+              <div
+                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-950"
+                style={{ backgroundColor: node.color }}
+              />
             )}
           </div>
 
           {/* Labels */}
-          <div className={`flex flex-col items-center transition-all duration-300 ${status === 'active' ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-80'
-            }`}>
-            <span className={`text-[10px] sm:text-xs font-bold tracking-wide uppercase ${status === 'active' ? 'text-cyan-300' : status === 'completed' ? 'text-emerald-300' : 'text-slate-400'
-              }`}>
+          <div className="flex flex-col items-center">
+            <span
+              className="text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase transition-colors duration-500"
+              style={{ color: isActive ? node.color : isDone ? `${node.color}cc` : '#64748b' }}
+            >
               {node.label}
             </span>
             {node.sublabel && !isMobile && (
-              <span className="text-[9px] text-slate-500 mt-0.5">{node.sublabel}</span>
+              <span className="text-[9px] text-slate-600 mt-0.5 font-medium">{node.sublabel}</span>
             )}
           </div>
         </div>
@@ -334,54 +402,77 @@ export default function AIAgentArchitecture() {
 
   return (
     <div ref={sectionRef} className="w-full max-w-5xl mx-auto mt-8 md:mt-16 relative">
+      {/* Ambient glow */}
+      <div className="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-violet-500/8 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Main Container */}
-      <div className="relative bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-white/5 shadow-2xl overflow-hidden">
+      {/* Main container */}
+      <div className="relative rounded-2xl sm:rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(2,6,23,0.98) 100%)' }}
+      >
+        {/* Subtle dot grid */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }} />
 
-        {/* Header / Status Bar */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 pointer-events-none">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/50 border border-white/5 backdrop-blur-md">
-            <div className={`w-2 h-2 rounded-full ${currentStageLabel ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'}`}></div>
-            <span className="text-xs font-medium text-slate-300">
-              {currentStageLabel || 'System Idle'}
-            </span>
+        {/* Top gradient line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+
+        {/* Status bar */}
+        <div className="relative z-20 flex justify-between items-center px-5 py-3.5 border-b border-white/[0.04]">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06]">
+              <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                currentStageLabel ? 'bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.6)]' : 'bg-slate-700'
+              }`} />
+              <span className="text-[11px] font-medium text-slate-400 tracking-wide">
+                {currentStageLabel || 'Awaiting input'}
+              </span>
+            </div>
+            {currentStageLabel && (
+              <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-600">
+                <div className="w-1 h-1 rounded-full bg-cyan-500/40 animate-pulse" />
+                <span>Pipeline active</span>
+              </div>
+            )}
           </div>
-          <div className="hidden sm:flex gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-500/20 border border-red-500/50"></div>
-            <div className="w-2 h-2 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
-            <div className="w-2 h-2 rounded-full bg-green-500/20 border border-green-500/50"></div>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:block text-[10px] text-slate-700 font-mono tracking-wider">v2.0</span>
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/15 border border-red-500/30" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/15 border border-yellow-500/30" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/15 border border-green-500/30" />
+            </div>
           </div>
         </div>
 
-        {/* Grid Background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
-          }}></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
-        </div>
-
-        {/* Animation Area */}
-        <div className={`relative w-full transition-all duration-500 ${isMobile ? 'h-[550px]' : 'h-[450px]'}`}>
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 1 }}>
+        {/* Canvas */}
+        <div className={`relative w-full ${isMobile ? 'h-[520px]' : 'h-[420px]'}`}>
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{ zIndex: 1 }}
+          >
             <defs>
-              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0" />
-                <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-                <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
-              </linearGradient>
+              <filter id="arch-glow">
+                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
-            {connections.map((conn, index) => renderConnection(conn, index))}
+            {CONNECTIONS.map((conn, i) => renderConnection(conn, i))}
           </svg>
 
-          {nodes.map(node => renderNode(node))}
+          {NODES.map(node => renderNode(node))}
         </div>
-      </div>
 
-      {/* Decorative Glows */}
-      <div className="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        {/* Bottom gradient line */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+      </div>
     </div>
   );
 }
