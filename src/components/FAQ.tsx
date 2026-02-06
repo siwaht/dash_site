@@ -44,48 +44,57 @@ export default function FAQ() {
     };
 
     return (
-        <section className="py-24 bg-slate-950 relative overflow-hidden" id="faq">
-            {/* Background Elements */}
+        <section className="py-20 sm:py-24 lg:py-28 bg-slate-950 relative overflow-hidden" id="faq">
+            {/* Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-indigo-900/10 rounded-full blur-[120px] mix-blend-screen"></div>
+                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-indigo-900/5 rounded-full blur-[150px]"></div>
             </div>
 
             <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-16">
-                    <div className="inline-flex items-center justify-center p-2 bg-indigo-500/10 rounded-full mb-4">
-                        <HelpCircle className="w-6 h-6 text-indigo-400" />
+                <div className="text-center max-w-3xl mx-auto mb-14">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-500/10 border border-indigo-500/15 rounded-2xl mb-6">
+                        <HelpCircle className="w-5 h-5 text-indigo-400" />
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white mb-4 tracking-tight">
                         Frequently Asked Questions
                     </h2>
-                    <p className="text-slate-400 text-lg">
+                    <p className="text-slate-500 text-lg">
                         Everything you need to know about our AI agents
                     </p>
                 </div>
 
-                <div className="max-w-3xl mx-auto space-y-4">
+                <div className="max-w-3xl mx-auto space-y-3">
                     {faqs.map((faq, index) => (
                         <div
                             key={index}
-                            className="bg-white/5 border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/20"
+                            className={`border rounded-xl overflow-hidden transition-all duration-500 ${
+                                openIndex === index
+                                    ? 'bg-white/[0.03] border-white/[0.08]'
+                                    : 'bg-white/[0.01] border-white/[0.05] hover:border-white/[0.08]'
+                            }`}
                         >
                             <button
                                 onClick={() => toggleFAQ(index)}
-                                className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+                                className="w-full flex items-center justify-between p-5 sm:p-6 text-left focus:outline-none"
                             >
-                                <span className="text-white font-semibold text-lg pr-8">{faq.question}</span>
-                                {openIndex === index ? (
-                                    <ChevronUp className="w-5 h-5 text-indigo-400 flex-shrink-0" />
-                                ) : (
-                                    <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                                )}
+                                <span className="text-white font-medium text-base sm:text-lg pr-8">{faq.question}</span>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                                    openIndex === index ? 'bg-indigo-500/15' : 'bg-white/[0.04]'
+                                }`}>
+                                    {openIndex === index ? (
+                                        <ChevronUp className="w-4 h-4 text-indigo-400" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 text-slate-500" />
+                                    )}
+                                </div>
                             </button>
 
                             <div
-                                className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                                    }`}
+                                className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                                    openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                }`}
                             >
-                                <div className="p-6 pt-0 text-slate-400 leading-relaxed">
+                                <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-slate-400 leading-relaxed text-sm sm:text-base">
                                     {faq.answer}
                                 </div>
                             </div>

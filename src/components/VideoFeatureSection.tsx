@@ -10,22 +10,22 @@ interface VideoFeatureSectionProps {
 
 // Memoized stat card component
 const StatCard = memo(({ label, value, colorClass }: { label: string; value: string; colorClass: string }) => (
-    <div className="text-center p-3 rounded-lg bg-white/5 border border-white/5">
-        <p className="text-xs text-slate-400 mb-1">{label}</p>
-        <p className={`${colorClass} font-bold`}>{value}</p>
+    <div className="text-center p-3 rounded-lg bg-white/[0.03] border border-white/[0.04]">
+        <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 font-medium">{label}</p>
+        <p className={`${colorClass} font-bold text-sm`}>{value}</p>
     </div>
 ));
 StatCard.displayName = 'StatCard';
 
 // Memoized feature card component
 const FeatureCard = memo(({ title, description }: { title: string; description: string }) => (
-    <div className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors duration-300">
-        <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-            <Check className="w-5 h-5 text-indigo-400" />
+    <div className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-500 group/card">
+        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/15 flex items-center justify-center flex-shrink-0 group-hover/card:bg-indigo-500/15 transition-colors duration-500">
+            <Check className="w-4 h-4 text-indigo-400" />
         </div>
         <div>
-            <h4 className="text-white font-semibold mb-1">{title}</h4>
-            <p className="text-sm text-slate-400">{description}</p>
+            <h4 className="text-white font-semibold mb-1 text-sm">{title}</h4>
+            <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
         </div>
     </div>
 ));
@@ -86,15 +86,15 @@ function VideoFeatureSection({ sectionId, alignment = 'left' }: VideoFeatureSect
     const flexDirection = alignment === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row';
 
     return (
-        <section id={sectionId} className="py-24 relative overflow-hidden">
+        <section id={sectionId} className="py-20 sm:py-24 lg:py-28 relative overflow-hidden">
             <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10">
-                <div className={`flex flex-col ${flexDirection} items-center gap-16`}>
+                <div className={`flex flex-col ${flexDirection} items-center gap-12 lg:gap-16`}>
 
                     {/* Video Card Side */}
                     <div className="w-full lg:w-1/2">
                         <div className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000" />
-                            <div className="relative bg-slate-900 rounded-2xl p-2 border border-white/10 shadow-2xl">
+                            <div className="absolute -inset-px bg-gradient-to-r from-indigo-500/20 via-violet-500/20 to-indigo-500/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="relative bg-slate-900/80 backdrop-blur-sm rounded-2xl p-2 border border-white/[0.06] shadow-2xl">
                                 <div ref={containerRef} className="relative aspect-video rounded-xl overflow-hidden bg-slate-950">
                                     {isEmbed ? (
                                         isInView ? (
@@ -165,15 +165,15 @@ function VideoFeatureSection({ sectionId, alignment = 'left' }: VideoFeatureSect
                     {/* Content Side */}
                     <div className="w-full lg:w-1/2 space-y-8">
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4 tracking-tight">
                                 {data.title}
                             </h2>
-                            <p className="text-slate-400 text-lg leading-relaxed">
+                            <p className="text-slate-400 text-base lg:text-lg leading-relaxed">
                                 {data.description}
                             </p>
                         </div>
 
-                        <div className="grid gap-4">
+                        <div className="grid gap-3">
                             {data.features.map((feature, index) => (
                                 <FeatureCard key={index} title={feature.title} description={feature.description} />
                             ))}
@@ -181,10 +181,10 @@ function VideoFeatureSection({ sectionId, alignment = 'left' }: VideoFeatureSect
 
                         <a 
                             href="#demo-form" 
-                            className="group inline-flex items-center gap-2 text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
+                            className="group inline-flex items-center gap-2 text-indigo-400 font-medium text-sm hover:text-indigo-300 transition-colors duration-300"
                         >
                             Learn more about {data.title}
-                            <Zap className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            <Zap className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
                         </a>
                     </div>
                 </div>
