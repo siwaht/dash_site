@@ -19,7 +19,6 @@ export default function AnimatedVisual() {
 
     isAnimatingRef.current = true;
     setTypedText('');
-    // setShowResults(false); // Keep results visible during typing loop
 
     let currentIndex = 0;
     const typingInterval = setInterval(() => {
@@ -36,18 +35,17 @@ export default function AnimatedVisual() {
       }
     }, 50);
 
+    // Track the interval for cleanup
+    const intervalId = typingInterval as unknown as NodeJS.Timeout;
+    timersRef.current.push(intervalId);
+
     const resetTimer = setTimeout(() => {
       isAnimatingRef.current = false;
       startAnimation();
-    }, 8000); // Extended duration to let users read the dashboard
+    }, 8000);
 
     timersRef.current.push(resetTimer);
-
-    return () => {
-      clearInterval(typingInterval);
-      clearAllTimers();
-    };
-  }, [fullText, clearAllTimers]);
+  }, [fullText]);
 
   useEffect(() => {
     startAnimation();

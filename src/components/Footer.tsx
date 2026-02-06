@@ -5,7 +5,7 @@ interface FooterProps {
 }
 
 export default function Footer({ onOpenPrivacy }: FooterProps) {
-  const currentYear = 2025;
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-slate-950 border-t border-white/5 relative overflow-hidden pt-16 pb-8">
@@ -80,8 +80,8 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
               <h4 className="font-bold text-white mb-6">Follow Us</h4>
               <div className="flex gap-4 justify-center md:justify-start">
                 {[
-                  { icon: Instagram, href: "https://www.instagram.com/agenticoslabs" },
-                  { icon: Linkedin, href: "https://www.linkedin.com/company/agenticoslabs" }
+                  { icon: Instagram, href: "https://www.instagram.com/agenticoslabs", label: "Follow us on Instagram" },
+                  { icon: Linkedin, href: "https://www.linkedin.com/company/agenticoslabs", label: "Follow us on LinkedIn" }
                 ].map((social, index) => (
                   <a
                     key={index}
@@ -89,7 +89,7 @@ export default function Footer({ onOpenPrivacy }: FooterProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300"
-                    aria-label="Social link"
+                    aria-label={social.label}
                   >
                     <social.icon className="w-5 h-5" />
                   </a>

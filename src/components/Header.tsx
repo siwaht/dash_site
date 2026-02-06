@@ -2,6 +2,12 @@ import { Sun, Moon, Menu, X, ArrowRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useState, useEffect } from 'react';
 
+const NAV_ITEMS = [
+  { label: 'Services', href: '#services' },
+  { label: 'Features', href: '#features' },
+  { label: 'Solutions', href: '#use-cases' },
+] as const;
+
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,11 +45,7 @@ export default function Header() {
           <a href="/admin" className="opacity-0 hover:opacity-100 focus:opacity-100 w-4 h-4" aria-label="Admin Panel"></a>
 
           <ul className="hidden md:flex gap-8 items-center">
-            {[
-              { label: 'Services', href: '#services' },
-              { label: 'Features', href: '#features' },
-              { label: 'Solutions', href: '#use-cases' }
-            ].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <li key={item.label}>
                 <a
                   href={item.href}
@@ -105,11 +107,7 @@ export default function Header() {
           style={{ maxHeight: 'calc(100vh - 72px)', overflowY: 'auto' }}
         >
           <ul className="flex flex-col gap-2">
-            {[
-              { label: 'Services', href: '#services' },
-              { label: 'Features', href: '#features' },
-              { label: 'Solutions', href: '#use-cases' }
-            ].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <li key={item.label}>
                 <a
                   href={item.href}

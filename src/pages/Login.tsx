@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Lock, ArrowRight, AlertCircle } from 'lucide-react';
 
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
+
 interface LoginProps {
     onLogin: () => void;
 }
@@ -14,7 +17,7 @@ export default function Login({ onLogin }: LoginProps) {
         e.preventDefault();
         setError('');
 
-        if (email === 'cc@siwaht.com' && password === 'Hola173!') {
+        if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
             onLogin();
         } else {
             setError('Invalid credentials. Please try again.');
@@ -41,26 +44,30 @@ export default function Login({ onLogin }: LoginProps) {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Email Address</label>
+                        <label htmlFor="login-email" className="text-sm font-medium text-slate-300">Email Address</label>
                         <input
                             type="email"
+                            id="login-email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                             placeholder="name@company.com"
                             required
+                            autoComplete="email"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Password</label>
+                        <label htmlFor="login-password" className="text-sm font-medium text-slate-300">Password</label>
                         <input
                             type="password"
+                            id="login-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                             placeholder="••••••••"
                             required
+                            autoComplete="current-password"
                         />
                     </div>
 
