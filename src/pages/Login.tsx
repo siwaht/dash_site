@@ -17,6 +17,11 @@ export default function Login({ onLogin }: LoginProps) {
         e.preventDefault();
         setError('');
 
+        if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+            setError('Admin login is not configured. Please set credentials in the environment.');
+            return;
+        }
+
         if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
             onLogin();
         } else {

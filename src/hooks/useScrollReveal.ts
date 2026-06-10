@@ -22,6 +22,8 @@ export function useScrollReveal({
                 el.classList.add('revealed');
               }, index * staggerDelay);
             });
+            // Reveal animation only needs to run once per section
+            observer.unobserve(entry.target);
           }
         });
       },
